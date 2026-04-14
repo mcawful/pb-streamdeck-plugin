@@ -32,13 +32,13 @@ export class PhantomCommand extends SingletonAction<PhantomCommandActionSettings
 		const command = (ev.payload.settings.command ?? "").trim();
 
 		if (!baseUrl || !webauth || !phantomUser) {
-			streamdeck.logger.warn("PhantomBot plugin settings incomplete (Base URL, token, or As user). Open plugin settings.");
+			streamdeck.logger.warn("PhantomBot: fill URL, token, and Bot Twitch user in key settings.");
 			await ev.action.showAlert();
 			return;
 		}
 
 		if (!command) {
-			streamdeck.logger.warn("PhantomBot key missing command");
+			streamdeck.logger.warn("PhantomBot: no command on this key.");
 			await ev.action.showAlert();
 			return;
 		}

@@ -2,7 +2,7 @@
 
 Stream Deck plugin based on the official [Elgato streamdeck-plugin-samples](https://github.com/elgatosf/streamdeck-plugin-samples) **hello-world** layout (`@elgato/streamdeck` SDK, Rollup, TypeScript).
 
-Each key sends an authenticated **HTTP PUT** to PhantomBot’s `HTTPAuthenticatedHandler` (for example `/dbquery`) with `user` and `message` headers. The plugin adds a leading `!` to the command when needed so PhantomBot treats it as a chat command. Auth uses the panel **webauth** token only (HTTP header `webauth`).
+Each key sends a command to PhantomBot over HTTP. The plugin adds `!` when you omit it. You authenticate with the panel token (webauth).
 
 ## Setup
 
@@ -12,9 +12,7 @@ Each key sends an authenticated **HTTP PUT** to PhantomBot’s `HTTPAuthenticate
 
 ## Settings
 
-Select a **Run command** key, then use the property inspector on the right. The inspector lists **this button’s command** first, then **shared server fields** (Stream Deck global settings: URL, webauth, run-as user, optional self-signed HTTPS). `!` on the command is optional; the plugin adds it when sending.
-
-The Node plugin uses `streamDeck.settings.getGlobalSettings()` for connection data and each key’s action settings for `command`.
+Select a **Run command** key and open the inspector. Set **Command** for that key. Under **Bot**, set URL, token, and **Bot Twitch user** once (shared for all keys). Use **Test** to check the connection.
 
 ## Develop
 

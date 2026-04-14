@@ -117,6 +117,64 @@
 				accent-color: #6ea8fe;
 				cursor: pointer;
 			}
+
+			.pb-actions {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				margin-top: 8px;
+			}
+
+			.pb-btn {
+				min-height: 26px;
+				padding: 4px 10px;
+				font-size: 0.82em;
+				color: #f2f2f2;
+				background: #3a3a3a;
+				border: 1px solid rgba(255, 255, 255, 0.18);
+				border-radius: 5px;
+				cursor: pointer;
+			}
+
+			.pb-btn:hover {
+				background: #474747;
+			}
+
+			.pb-btn:disabled {
+				opacity: 0.6;
+				cursor: default;
+			}
+
+			.pb-collapse {
+				margin: 0;
+				padding: 0;
+			}
+
+			.pb-collapse > summary {
+				list-style: none;
+				cursor: pointer;
+				margin: 0;
+				padding: 0;
+			}
+
+			.pb-collapse > summary::-webkit-details-marker {
+				display: none;
+			}
+
+			.pb-collapse > summary .pb-kicker::after {
+				content: "▾";
+				float: right;
+				color: #8e8e8e;
+				font-size: 0.8rem;
+			}
+
+			.pb-collapse:not([open]) > summary .pb-kicker::after {
+				content: "▸";
+			}
+
+			.pb-collapse-body {
+				padding-top: 2px;
+			}
 		</style>
 	</head>
 
@@ -124,43 +182,54 @@
 		<div class="pb-root">
 			<div class="pb-panel">
 				<section aria-labelledby="pb-cmd-kicker">
-					<p class="pb-kicker" id="pb-cmd-kicker">This button</p>
+					<p class="pb-kicker" id="pb-cmd-kicker">Command</p>
 					<div class="pb-field">
 						<label class="pb-label" for="field-command">Command</label>
 						<input class="pb-input" id="field-command" type="text" autocomplete="off" placeholder="commercial 30" />
 					</div>
-					<p class="pb-micro">PhantomBot receives a leading ! automatically when needed.</p>
+					<p class="pb-micro">Adds ! if you leave it off.</p>
 				</section>
 
 				<hr class="pb-rule" />
 
 				<section aria-labelledby="pb-srv-kicker">
-					<p class="pb-kicker" id="pb-srv-kicker">All buttons</p>
-					<p class="pb-micro" style="margin: 0 0 10px 0">One setup for every Run command key. Panel webauth token only.</p>
+					<details class="pb-collapse" open>
+						<summary>
+							<p class="pb-kicker" id="pb-srv-kicker">Bot configuration</p>
+						</summary>
+						<div class="pb-collapse-body">
+							<p class="pb-micro" style="margin: 0 0 10px 0">Same for every key.</p>
 
-					<div class="pb-field">
-						<label class="pb-label" for="field-baseUrl">Bot base URL</label>
-						<input class="pb-input" id="field-baseUrl" type="text" autocomplete="off" placeholder="https://127.0.0.1:25000" />
-					</div>
+							<div class="pb-field">
+								<label class="pb-label" for="field-baseUrl">URL</label>
+								<input class="pb-input" id="field-baseUrl" type="text" autocomplete="off" placeholder="https://127.0.0.1:25000" />
+							</div>
 
-					<div class="pb-field">
-						<label class="pb-label" for="field-webauth">Webauth token</label>
-						<input class="pb-input" id="field-webauth" type="password" autocomplete="off" placeholder="Panel token" />
-					</div>
+							<div class="pb-field">
+								<label class="pb-label" for="field-webauth">Token</label>
+								<input class="pb-input" id="field-webauth" type="password" autocomplete="off" placeholder="from PhantomBot panel" />
+							</div>
 
-					<div class="pb-field">
-						<label class="pb-label" for="field-phantomUser">Run as user</label>
-						<input class="pb-input" id="field-phantomUser" type="text" autocomplete="off" placeholder="Channel or caster name" />
-					</div>
+							<div class="pb-field">
+								<label class="pb-label" for="field-phantomUser">Bot Twitch user</label>
+								<input class="pb-input" id="field-phantomUser" type="text" autocomplete="off" placeholder="channel or bot user" />
+							</div>
 
-					<div class="pb-field pb-row-check">
-						<label
-							class="pb-label"
-							for="field-allowInsecureTls"
-							title="Enable only if PhantomBot uses HTTPS with a self-signed certificate."
-							>Trust self-signed HTTPS</label>
-						<input class="pb-checkbox" id="field-allowInsecureTls" type="checkbox" />
-					</div>
+							<div class="pb-field pb-row-check">
+								<label
+									class="pb-label"
+									for="field-allowInsecureTls"
+									title="Turn on if HTTPS uses a self-signed certificate."
+									>Self-signed HTTPS</label>
+								<input class="pb-checkbox" id="field-allowInsecureTls" type="checkbox" />
+							</div>
+
+							<div class="pb-actions">
+								<button class="pb-btn" id="btn-test-connection" type="button">Test</button>
+								<span class="pb-micro" id="connection-status" aria-live="polite"></span>
+							</div>
+						</div>
+					</details>
 				</section>
 			</div>
 		</div>
@@ -173,6 +242,8 @@
 				const userEl = document.getElementById("field-phantomUser");
 				const tlsEl = document.getElementById("field-allowInsecureTls");
 				const commandEl = document.getElementById("field-command");
+				const testConnectionBtn = document.getElementById("btn-test-connection");
+				const connectionStatusEl = document.getElementById("connection-status");
 
 				let saveGlobalTimer = null;
 				let saveActionTimer = null;
@@ -198,6 +269,35 @@
 							client.setGlobalSettings(patch);
 						}
 					}, 250);
+				}
+
+				function setConnectionStatus(text, ok) {
+					connectionStatusEl.textContent = text || "";
+					if (ok === true) {
+						connectionStatusEl.style.color = "#80d6a4";
+					} else if (ok === false) {
+						connectionStatusEl.style.color = "#ff8d8d";
+					} else {
+						connectionStatusEl.style.color = "#8e8e8e";
+					}
+				}
+
+				async function runConnectionTest() {
+					testConnectionBtn.disabled = true;
+					setConnectionStatus("Checking…", null);
+					scheduleSaveGlobal();
+
+					const payload = {
+						event: "testConnection",
+						settings: readGlobalForm()
+					};
+
+					try {
+						await client.send("sendToPlugin", payload);
+					} catch (_) {
+						setConnectionStatus("Can't send test.", false);
+						testConnectionBtn.disabled = false;
+					}
 				}
 
 				async function loadGlobalForm() {
@@ -231,6 +331,13 @@
 					}
 				});
 
+				client.sendToPropertyInspector.subscribe(function (ev) {
+					const p = ev && ev.payload;
+					if (!p || p.event !== "connectionResult") return;
+					setConnectionStatus(typeof p.message === "string" ? p.message : "", p.ok === true);
+					testConnectionBtn.disabled = false;
+				});
+
 				document.addEventListener("DOMContentLoaded", async function () {
 					try {
 						const info = await client.getConnectionInfo();
@@ -251,6 +358,8 @@
 						tlsEl.addEventListener(ev, scheduleSaveGlobal);
 						commandEl.addEventListener(ev, scheduleSaveCommand);
 					});
+
+					testConnectionBtn.addEventListener("click", runConnectionTest);
 				});
 			})();
 		</script>

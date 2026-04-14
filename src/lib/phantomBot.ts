@@ -43,3 +43,39 @@ export async function sendPhantomCommand(
 	const body = await res.text();
 	return { ok: res.ok, status: res.status, body };
 }
+
+export type TestPhantomBotConnectionOptions = {
+	baseUrl: string;
+	/** PhantomBot panel webauth token. */
+	webauth: string;
+	allowInsecureTls?: boolean;
+};
+
+/**
+ * Validates whether PhantomBot HTTP auth is working by calling an authenticated endpoint.
+ * `/games` returns quickly and requires auth, which makes it useful as a connection check.
+ */
+export async function testPhantomBotConnection(
+	options: TestPhantomBotConnectionOptions
+): Promise<{ ok: boolean; status: number; body: string }> {
+	const base = options.baseUrl.replace(/\/$/, "");
+	const url = `${base}/games?search=a`;
+	const headers: Record<string, string> = { webauth: options.webauth };
+
+	const init: RequestInit = {
+		method: "GET",
+		headers
+	};
+
+	if (options.allowInsecureTls) {
+		init.dispatcher = new Agent({
+			connect: {
+				rejectUnauthorized: false
+			}
+		});
+	}
+
+	const res = await undiciFetch(url, init);
+	const body = await res.text();
+	return { ok: res.ok, status: res.status, body };
+}

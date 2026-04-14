@@ -1,8 +1,8 @@
 {
 	"Name": "PhantomBot Command",
-	"Description": "Run PhantomBot commands from your Stream Deck using the bot HTTP API.",
+	"Description": "Run PhantomBot commands from Stream Deck.",
 	"com.mcawful.pbstreamdeck.command": {
 		"Name": "Run command",
-		"Tooltip": "Send a PhantomBot chat command over HTTP."
+		"Tooltip": "Run a PhantomBot chat command."
 	}
 }
