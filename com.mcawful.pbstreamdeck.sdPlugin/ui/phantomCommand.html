@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>PhantomBot</title>
+		<script src="https://sdpi-components.dev/releases/v3/sdpi-components.js"></script>
+		<style>
+			html,
+			body,
+			.pb-root,
+			.pb-root * {
+				font-family: inherit;
+			}
+
+			html {
+				font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			}
+
+			body {
+				margin: 0;
+				padding: 0;
+			}
+
+			.pb-root {
+				box-sizing: border-box;
+				padding: 8px 10px 12px;
+				max-width: 100%;
+			}
+
+			.pb-panel {
+				background: rgba(0, 0, 0, 0.2);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 8px;
+				padding: 10px 12px 12px;
+			}
+
+			.pb-kicker {
+				margin: 0 0 6px 0;
+				font-size: 0.68rem;
+				font-weight: 600;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+				color: #9a9a9a;
+			}
+
+			.pb-field {
+				margin-bottom: 10px;
+			}
+
+			.pb-field:last-child {
+				margin-bottom: 0;
+			}
+
+			.pb-label {
+				display: block;
+				margin: 0 0 4px 0;
+				font-size: 0.8em;
+				font-weight: 500;
+				color: #c4c4c4;
+			}
+
+			.pb-input {
+				box-sizing: border-box;
+				display: block;
+				width: 100%;
+				min-height: 26px;
+				padding: 5px 9px;
+				font-size: 0.92em;
+				line-height: 1.35;
+				color: #f0f0f0;
+				background: #2c2c2c;
+				border: 1px solid rgba(255, 255, 255, 0.14);
+				border-radius: 5px;
+				outline: none;
+			}
+
+			.pb-input::placeholder {
+				color: #7a7a7a;
+			}
+
+			.pb-input:focus {
+				border-color: rgba(120, 170, 255, 0.55);
+				box-shadow: 0 0 0 1px rgba(120, 170, 255, 0.18);
+			}
+
+			.pb-micro {
+				margin: 5px 0 0 0;
+				font-size: 0.72rem;
+				line-height: 1.35;
+				color: #8e8e8e;
+			}
+
+			.pb-rule {
+				margin: 12px 0 12px 0;
+				border: none;
+				border-top: 1px solid rgba(255, 255, 255, 0.1);
+			}
+
+			.pb-row-check {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				margin-top: 2px;
+			}
+
+			.pb-row-check .pb-label {
+				margin: 0;
+				flex: 1;
+				font-size: 0.78em;
+			}
+
+			.pb-checkbox {
+				width: 15px;
+				height: 15px;
+				margin: 0;
+				flex-shrink: 0;
+				accent-color: #6ea8fe;
+				cursor: pointer;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="pb-root">
+			<div class="pb-panel">
+				<section aria-labelledby="pb-cmd-kicker">
+					<p class="pb-kicker" id="pb-cmd-kicker">This button</p>
+					<div class="pb-field">
+						<label class="pb-label" for="field-command">Command</label>
+						<input class="pb-input" id="field-command" type="text" autocomplete="off" placeholder="commercial 30" />
+					</div>
+					<p class="pb-micro">PhantomBot receives a leading ! automatically when needed.</p>
+				</section>
+
+				<hr class="pb-rule" />
+
+				<section aria-labelledby="pb-srv-kicker">
+					<p class="pb-kicker" id="pb-srv-kicker">All buttons</p>
+					<p class="pb-micro" style="margin: 0 0 10px 0">One setup for every Run command key. Panel webauth token only.</p>
+
+					<div class="pb-field">
+						<label class="pb-label" for="field-baseUrl">Bot base URL</label>
+						<input class="pb-input" id="field-baseUrl" type="text" autocomplete="off" placeholder="https://127.0.0.1:25000" />
+					</div>
+
+					<div class="pb-field">
+						<label class="pb-label" for="field-webauth">Webauth token</label>
+						<input class="pb-input" id="field-webauth" type="password" autocomplete="off" placeholder="Panel token" />
+					</div>
+
+					<div class="pb-field">
+						<label class="pb-label" for="field-phantomUser">Run as user</label>
+						<input class="pb-input" id="field-phantomUser" type="text" autocomplete="off" placeholder="Channel or caster name" />
+					</div>
+
+					<div class="pb-field pb-row-check">
+						<label
+							class="pb-label"
+							for="field-allowInsecureTls"
+							title="Enable only if PhantomBot uses HTTPS with a self-signed certificate."
+							>Trust self-signed HTTPS</label>
+						<input class="pb-checkbox" id="field-allowInsecureTls" type="checkbox" />
+					</div>
+				</section>
+			</div>
+		</div>
+
+		<script>
+			(function () {
+				const client = SDPIComponents.streamDeckClient;
+				const baseUrlEl = document.getElementById("field-baseUrl");
+				const webauthEl = document.getElementById("field-webauth");
+				const userEl = document.getElementById("field-phantomUser");
+				const tlsEl = document.getElementById("field-allowInsecureTls");
+				const commandEl = document.getElementById("field-command");
+
+				let saveGlobalTimer = null;
+				let saveActionTimer = null;
+
+				function readGlobalForm() {
+					return {
+						baseUrl: baseUrlEl.value.trim(),
+						webauth: webauthEl.value,
+						phantomUser: userEl.value.trim(),
+						allowInsecureTls: tlsEl.checked
+					};
+				}
+
+				function scheduleSaveGlobal() {
+					if (saveGlobalTimer) clearTimeout(saveGlobalTimer);
+					saveGlobalTimer = setTimeout(async function () {
+						saveGlobalTimer = null;
+						const patch = readGlobalForm();
+						try {
+							const current = await client.getGlobalSettings();
+							client.setGlobalSettings(Object.assign({}, current, patch));
+						} catch (_) {
+							client.setGlobalSettings(patch);
+						}
+					}, 250);
+				}
+
+				async function loadGlobalForm() {
+					const s = await client.getGlobalSettings();
+					baseUrlEl.value = typeof s.baseUrl === "string" ? s.baseUrl : "";
+					webauthEl.value = typeof s.webauth === "string" ? s.webauth : "";
+					userEl.value = typeof s.phantomUser === "string" ? s.phantomUser : "";
+					tlsEl.checked = s.allowInsecureTls === true || s.allowInsecureTls === "true";
+				}
+
+				function scheduleSaveCommand() {
+					if (saveActionTimer) clearTimeout(saveActionTimer);
+					saveActionTimer = setTimeout(function () {
+						saveActionTimer = null;
+						client.setSettings({ command: commandEl.value.trim() });
+					}, 250);
+				}
+
+				async function loadActionSettings() {
+					const res = await client.getSettings();
+					const cmd = res && res.settings && res.settings.command;
+					commandEl.value = typeof cmd === "string" ? cmd : "";
+				}
+
+				client.didReceiveSettings.subscribe(function (ev) {
+					if (document.activeElement === commandEl) return;
+					const settings = ev && ev.payload && ev.payload.settings;
+					const cmd = settings && settings.command;
+					if (typeof cmd === "string") {
+						commandEl.value = cmd;
+					}
+				});
+
+				document.addEventListener("DOMContentLoaded", async function () {
+					try {
+						const info = await client.getConnectionInfo();
+						const font = info && info.application && info.application.font;
+						if (typeof font === "string" && font.length > 0) {
+							document.documentElement.style.font = font;
+							document.body.style.font = font;
+						}
+					} catch (_) {}
+
+					await loadGlobalForm();
+					await loadActionSettings();
+
+					["input", "change"].forEach(function (ev) {
+						baseUrlEl.addEventListener(ev, scheduleSaveGlobal);
+						webauthEl.addEventListener(ev, scheduleSaveGlobal);
+						userEl.addEventListener(ev, scheduleSaveGlobal);
+						tlsEl.addEventListener(ev, scheduleSaveGlobal);
+						commandEl.addEventListener(ev, scheduleSaveCommand);
+					});
+				});
+			})();
+		</script>
+	</body>
+</html>

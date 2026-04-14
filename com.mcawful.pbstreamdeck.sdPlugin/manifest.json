@@ -1,0 +1,45 @@
+{
+	"Name": "PhantomBot Command",
+	"Version": "0.1.6.0",
+	"Author": "McAwful",
+	"Actions": [
+		{
+			"Name": "Run command",
+			"UUID": "com.mcawful.pbstreamdeck.command",
+			"Icon": "imgs/actions/command/icon",
+			"Tooltip": "Send a PhantomBot chat command over HTTP (authenticated PUT to /dbquery).",
+			"PropertyInspectorPath": "ui/phantomCommand.html",
+			"Controllers": ["Keypad"],
+			"States": [
+				{
+					"Image": "imgs/actions/command/key",
+					"TitleAlignment": "middle"
+				}
+			]
+		}
+	],
+	"Category": "PhantomBot",
+	"CategoryIcon": "imgs/plugin/category-icon",
+	"CodePath": "bin/plugin.js",
+	"Description": "Run PhantomBot commands from your Stream Deck using the bot HTTP API.",
+	"Icon": "imgs/plugin/marketplace",
+	"SDKVersion": 2,
+	"Software": {
+		"MinimumVersion": "6.5"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "10.15"
+		},
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "20",
+		"Debug": "enabled"
+	},
+	"UUID": "com.mcawful.pbstreamdeck"
+}
