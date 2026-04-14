@@ -184,8 +184,14 @@
 				<section aria-labelledby="pb-cmd-kicker">
 					<p class="pb-kicker" id="pb-cmd-kicker">Command</p>
 					<div class="pb-field">
-						<label class="pb-label" for="field-command">Command</label>
-						<input class="pb-input" id="field-command" type="text" autocomplete="off" placeholder="commercial 30" />
+						<input
+							class="pb-input"
+							id="field-command"
+							type="text"
+							autocomplete="off"
+							placeholder="commercial 30"
+							aria-labelledby="pb-cmd-kicker"
+						/>
 					</div>
 					<p class="pb-micro">Adds ! if you leave it off.</p>
 				</section>
@@ -195,24 +201,24 @@
 				<section aria-labelledby="pb-srv-kicker">
 					<details class="pb-collapse" open>
 						<summary>
-							<p class="pb-kicker" id="pb-srv-kicker">Bot configuration</p>
+							<p class="pb-kicker" id="pb-srv-kicker">Bot connection configuration</p>
 						</summary>
 						<div class="pb-collapse-body">
-							<p class="pb-micro" style="margin: 0 0 10px 0">Same for every key.</p>
+							<p class="pb-micro" style="margin: 0 0 10px 0">Sets up the connection between the plugin and your PhantomBot instance.</p>
 
 							<div class="pb-field">
-								<label class="pb-label" for="field-baseUrl">URL</label>
+								<label class="pb-label" for="field-baseUrl">Bot URL</label>
 								<input class="pb-input" id="field-baseUrl" type="text" autocomplete="off" placeholder="https://127.0.0.1:25000" />
 							</div>
 
 							<div class="pb-field">
-								<label class="pb-label" for="field-webauth">Token</label>
-								<input class="pb-input" id="field-webauth" type="password" autocomplete="off" placeholder="from PhantomBot panel" />
+								<label class="pb-label" for="field-webauth">Bot webauth token</label>
+								<input class="pb-input" id="field-webauth" type="password" autocomplete="off" placeholder="from PhantomBot botlogin.txt file" />
 							</div>
 
 							<div class="pb-field">
-								<label class="pb-label" for="field-phantomUser">Bot Twitch user</label>
-								<input class="pb-input" id="field-phantomUser" type="text" autocomplete="off" placeholder="channel or bot user" />
+								<label class="pb-label" for="field-phantomUser">Bot Twitch username</label>
+								<input class="pb-input" id="field-phantomUser" type="text" autocomplete="off" placeholder="bot Twitch username" />
 							</div>
 
 							<div class="pb-field pb-row-check">
@@ -220,7 +226,7 @@
 									class="pb-label"
 									for="field-allowInsecureTls"
 									title="Turn on if HTTPS uses a self-signed certificate."
-									>Self-signed HTTPS</label>
+									>Allow Self-signed HTTPS</label>
 								<input class="pb-checkbox" id="field-allowInsecureTls" type="checkbox" />
 							</div>
 
@@ -248,6 +254,10 @@
 				let saveGlobalTimer = null;
 				let saveActionTimer = null;
 				let testWatchdogTimer = null;
+
+				function toBool(v) {
+					return v === true || v === "true" || v === 1 || v === "1";
+				}
 
 				function readGlobalForm() {
 					return {
@@ -317,7 +327,7 @@
 					baseUrlEl.value = typeof s.baseUrl === "string" ? s.baseUrl : "";
 					webauthEl.value = typeof s.webauth === "string" ? s.webauth : "";
 					userEl.value = typeof s.phantomUser === "string" ? s.phantomUser : "";
-					tlsEl.checked = s.allowInsecureTls === true || s.allowInsecureTls === "true";
+					tlsEl.checked = toBool(s.allowInsecureTls);
 				}
 
 				function scheduleSaveCommand() {

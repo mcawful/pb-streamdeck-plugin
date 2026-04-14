@@ -12,7 +12,9 @@ Each key sends a command to PhantomBot over HTTP. The plugin adds `!` when you o
 
 ## Settings
 
-Select a **Run command** key and open the inspector. Set **Command** for that key. Under **Bot**, set URL, token, and **Bot Twitch user** once (shared for all keys). Use **Test** to check the connection.
+Select a **Run command** key and open the inspector. Set **Command** for that key. Under **Bot configuration**, set URL, token, and **Bot Twitch user** once (shared for all keys). Use **Test** to check the connection.
+
+The key’s on-device **Title** (in Stream Deck’s layout editor) is whatever you type there; it is not synced from the Command field.
 
 ## Develop
 

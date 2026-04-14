@@ -2,6 +2,7 @@
 	"name": "pb-streamdeck-plugin",
 	"scripts": {
 		"build": "rollup -c",
+		"typecheck": "tsc --noEmit",
 		"watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.mcawful.pbstreamdeck\""
 	},
 	"type": "module",

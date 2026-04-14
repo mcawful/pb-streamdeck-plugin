@@ -1,10 +1,9 @@
 import streamDeck from "@elgato/streamdeck";
-// Not exported from `@elgato/streamdeck` package entry; relative path so Rollup bundles it.
-// Used so replies use this action's `context` (streamDeck.ui.sendToPropertyInspector can no-op if UI has no current action).
-import { connection } from "../node_modules/@elgato/streamdeck/dist/plugin/connection.js";
 
 import { PhantomCommand } from "./actions/phantomCommand";
 import { testPhantomBotConnection } from "./lib/phantomBot";
+import { connection } from "./lib/streamDeckConnection";
+import { toBool } from "./lib/toBool";
 import type { PluginGlobalSettings } from "./settings";
 
 streamDeck.logger.setLevel("info");
@@ -21,10 +20,6 @@ type ConnectionResultPayload = {
 	ok: boolean;
 	message: string;
 };
-
-function toBool(value: unknown): boolean {
-	return value === true || value === "true" || value === 1 || value === "1";
-}
 
 async function sendConnectionResultToInspector(context: string, payload: ConnectionResultPayload): Promise<void> {
 	await connection.send({

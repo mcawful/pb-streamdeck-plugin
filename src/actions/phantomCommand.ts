@@ -1,27 +1,11 @@
-import streamdeck, {
-	action,
-	DidReceiveSettingsEvent,
-	KeyAction,
-	KeyDownEvent,
-	SingletonAction,
-	WillAppearEvent
-} from "@elgato/streamdeck";
+import streamdeck, { action, KeyDownEvent, SingletonAction } from "@elgato/streamdeck";
 
 import { sendPhantomCommand } from "../lib/phantomBot";
+import { toBool } from "../lib/toBool";
 import type { PhantomCommandActionSettings, PluginGlobalSettings } from "../settings";
 
 @action({ UUID: "com.mcawful.pbstreamdeck.command" })
 export class PhantomCommand extends SingletonAction<PhantomCommandActionSettings> {
-	override async onWillAppear(ev: WillAppearEvent<PhantomCommandActionSettings>): Promise<void> {
-		if (!ev.action.isKey()) return;
-		await this.refreshTitle(ev.payload.settings, ev.action);
-	}
-
-	override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<PhantomCommandActionSettings>): Promise<void> {
-		if (!ev.action.isKey()) return;
-		await this.refreshTitle(ev.payload.settings, ev.action);
-	}
-
 	override async onKeyDown(ev: KeyDownEvent<PhantomCommandActionSettings>): Promise<void> {
 		if (!ev.action.isKey()) return;
 
@@ -32,7 +16,7 @@ export class PhantomCommand extends SingletonAction<PhantomCommandActionSettings
 		const command = (ev.payload.settings.command ?? "").trim();
 
 		if (!baseUrl || !webauth || !phantomUser) {
-			streamdeck.logger.warn("PhantomBot: fill URL, token, and Bot Twitch user in key settings.");
+			streamdeck.logger.warn("PhantomBot: fill URL, token, and Bot Twitch user (Bot section in inspector).");
 			await ev.action.showAlert();
 			return;
 		}
@@ -65,21 +49,6 @@ export class PhantomCommand extends SingletonAction<PhantomCommandActionSettings
 			await ev.action.showAlert();
 		}
 	}
-
-	private async refreshTitle(settings: PhantomCommandActionSettings, action: KeyAction<PhantomCommandActionSettings>) {
-		const cmd = (settings.command ?? "").trim();
-		const title = cmd ? truncate(cmd, 24) : "PB";
-		await action.setTitle(title);
-	}
-}
-
-function truncate(text: string, max: number): string {
-	if (text.length <= max) return text;
-	return `${text.slice(0, max - 1)}…`;
-}
-
-function toBool(value: unknown): boolean {
-	return value === true || value === "true" || value === 1 || value === "1";
 }
 
 /** PhantomBot treats messages starting with `!` as chat commands; we add it if the user omitted it. */
