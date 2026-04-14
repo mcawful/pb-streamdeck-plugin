@@ -247,6 +247,7 @@
 
 				let saveGlobalTimer = null;
 				let saveActionTimer = null;
+				let testWatchdogTimer = null;
 
 				function readGlobalForm() {
 					return {
@@ -287,6 +288,15 @@
 					setConnectionStatus("Checking…", null);
 					scheduleSaveGlobal();
 
+					if (testWatchdogTimer) clearTimeout(testWatchdogTimer);
+					testWatchdogTimer = setTimeout(function () {
+						testWatchdogTimer = null;
+						if (testConnectionBtn.disabled) {
+							setConnectionStatus("No response. Reopen this key and try again.", false);
+							testConnectionBtn.disabled = false;
+						}
+					}, 15000);
+
 					const payload = {
 						event: "testConnection",
 						settings: readGlobalForm()
@@ -295,6 +305,8 @@
 					try {
 						await client.send("sendToPlugin", payload);
 					} catch (_) {
+						if (testWatchdogTimer) clearTimeout(testWatchdogTimer);
+						testWatchdogTimer = null;
 						setConnectionStatus("Can't send test.", false);
 						testConnectionBtn.disabled = false;
 					}
@@ -334,6 +346,8 @@
 				client.sendToPropertyInspector.subscribe(function (ev) {
 					const p = ev && ev.payload;
 					if (!p || p.event !== "connectionResult") return;
+					if (testWatchdogTimer) clearTimeout(testWatchdogTimer);
+					testWatchdogTimer = null;
 					setConnectionStatus(typeof p.message === "string" ? p.message : "", p.ok === true);
 					testConnectionBtn.disabled = false;
 				});

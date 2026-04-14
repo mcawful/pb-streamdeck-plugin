@@ -62,9 +62,14 @@ export async function testPhantomBotConnection(
 	const url = `${base}/games?search=a`;
 	const headers: Record<string, string> = { webauth: options.webauth };
 
+	const controller = new AbortController();
+	const timeoutMs = 12_000;
+	const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
 	const init: RequestInit = {
 		method: "GET",
-		headers
+		headers,
+		signal: controller.signal
 	};
 
 	if (options.allowInsecureTls) {
@@ -75,7 +80,11 @@ export async function testPhantomBotConnection(
 		});
 	}
 
-	const res = await undiciFetch(url, init);
-	const body = await res.text();
-	return { ok: res.ok, status: res.status, body };
+	try {
+		const res = await undiciFetch(url, init);
+		const body = await res.text();
+		return { ok: res.ok, status: res.status, body };
+	} finally {
+		clearTimeout(timeoutId);
+	}
 }

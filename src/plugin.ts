@@ -1,4 +1,7 @@
 import streamDeck from "@elgato/streamdeck";
+// Not exported from `@elgato/streamdeck` package entry; relative path so Rollup bundles it.
+// Used so replies use this action's `context` (streamDeck.ui.sendToPropertyInspector can no-op if UI has no current action).
+import { connection } from "../node_modules/@elgato/streamdeck/dist/plugin/connection.js";
 
 import { PhantomCommand } from "./actions/phantomCommand";
 import { testPhantomBotConnection } from "./lib/phantomBot";
@@ -13,17 +16,36 @@ type InspectorRequest = {
 	settings?: PluginGlobalSettings;
 };
 
+type ConnectionResultPayload = {
+	event: "connectionResult";
+	ok: boolean;
+	message: string;
+};
+
+function toBool(value: unknown): boolean {
+	return value === true || value === "true" || value === 1 || value === "1";
+}
+
+async function sendConnectionResultToInspector(context: string, payload: ConnectionResultPayload): Promise<void> {
+	await connection.send({
+		event: "sendToPropertyInspector",
+		context,
+		payload
+	});
+}
+
 streamDeck.ui.onSendToPlugin<InspectorRequest>(async (ev) => {
 	const payload = ev.payload ?? {};
 	if (payload.event !== "testConnection") return;
 
+	const context = ev.action.id;
 	const s = payload.settings ?? {};
 	const baseUrl = (s.baseUrl ?? "").trim();
 	const webauth = (s.webauth ?? "").trim();
-	const allowInsecureTls = s.allowInsecureTls === true;
+	const allowInsecureTls = toBool(s.allowInsecureTls);
 
 	if (!baseUrl || !webauth) {
-		await streamDeck.ui.sendToPropertyInspector({
+		await sendConnectionResultToInspector(context, {
 			event: "connectionResult",
 			ok: false,
 			message: "Enter URL and token."
@@ -34,23 +56,24 @@ streamDeck.ui.onSendToPlugin<InspectorRequest>(async (ev) => {
 	try {
 		const result = await testPhantomBotConnection({ baseUrl, webauth, allowInsecureTls });
 		if (result.ok) {
-			await streamDeck.ui.sendToPropertyInspector({
+			await sendConnectionResultToInspector(context, {
 				event: "connectionResult",
 				ok: true,
 				message: "Connected."
 			});
 		} else {
-			await streamDeck.ui.sendToPropertyInspector({
+			await sendConnectionResultToInspector(context, {
 				event: "connectionResult",
 				ok: false,
 				message: `Failed (HTTP ${result.status}). Check URL and token.`
 			});
 		}
 	} catch (err) {
-		await streamDeck.ui.sendToPropertyInspector({
+		const aborted = err instanceof Error && err.name === "AbortError";
+		await sendConnectionResultToInspector(context, {
 			event: "connectionResult",
 			ok: false,
-			message: `Can't reach bot. ${String(err)}`
+			message: aborted ? "Timed out. Check URL and network." : `Can't reach bot. ${String(err)}`
 		});
 	}
 });
