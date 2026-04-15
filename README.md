@@ -16,6 +16,8 @@ Select a **Run command** key and open the inspector. Set **Command** for that ke
 
 The key’s on-device **Title** (in Stream Deck’s layout editor) is whatever you type there; it is not synced from the Command field.
 
+**HTTPS / TLS:** If the bot URL uses `https://` and the certificate is not trusted (self-signed, local dev, etc.), enable **Don’t verify HTTPS certificates**. That disables certificate checking for HTTPS only and shows a clear security warning in the inspector while it is on.
+
 ## Develop
 
 `npm run watch` rebuilds on change and restarts the plugin via the Stream Deck CLI.

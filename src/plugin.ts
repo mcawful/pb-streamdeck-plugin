@@ -49,6 +49,11 @@ streamDeck.ui.onSendToPlugin<InspectorRequest>(async (ev) => {
 	}
 
 	try {
+		if (allowInsecureTls && baseUrl.toLowerCase().startsWith("https:")) {
+			streamDeck.logger.warn(
+				"PhantomBot connection test: HTTPS without certificate verification (option enabled). MITM risk on untrusted networks."
+			);
+		}
 		const result = await testPhantomBotConnection({ baseUrl, webauth, allowInsecureTls });
 		if (result.ok) {
 			await sendConnectionResultToInspector(context, {

@@ -7,6 +7,10 @@ export type PluginGlobalSettings = {
 	webauth?: string;
 	/** Twitch/channel name PhantomBot uses for command permission checks (HTTP header `user`). */
 	phantomUser?: string;
+	/**
+	 * When true, HTTPS requests skip TLS certificate verification (`rejectUnauthorized: false`).
+	 * Use for self-signed certs, local dev, or broken chains; does not affect `http://` URLs.
+	 */
 	allowInsecureTls?: boolean;
 };
 

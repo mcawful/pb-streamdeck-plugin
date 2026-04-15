@@ -118,6 +118,26 @@
 				cursor: pointer;
 			}
 
+			.pb-insecure-warn {
+				display: none;
+				margin: 0 0 10px 0;
+				padding: 8px 10px;
+				font-size: 0.72rem;
+				line-height: 1.45;
+				color: #f2d4a8;
+				background: rgba(200, 120, 40, 0.14);
+				border: 1px solid rgba(255, 170, 90, 0.35);
+				border-radius: 6px;
+			}
+
+			.pb-insecure-warn.is-visible {
+				display: block;
+			}
+
+			.pb-insecure-warn strong {
+				color: #ffb090;
+			}
+
 			.pb-actions {
 				display: flex;
 				align-items: center;
@@ -225,10 +245,16 @@
 								<label
 									class="pb-label"
 									for="field-allowInsecureTls"
-									title="Turn on if HTTPS uses a self-signed certificate."
-									>Allow Self-signed HTTPS</label>
+									title="Skips TLS certificate verification for https:// URLs only. Insecure: use on trusted or local networks, or with self-signed dev certs."
+									>Don’t verify HTTPS certificates</label>
 								<input class="pb-checkbox" id="field-allowInsecureTls" type="checkbox" />
 							</div>
+
+							<p id="tls-insecure-warning" class="pb-insecure-warn" role="status" aria-live="polite">
+								<strong>Insecure.</strong> HTTPS connections will not validate the server certificate. Someone on an
+								untrusted network could impersonate your bot (MITM). Prefer <code>http://</code> or a proper certificate
+								when you can. This option does nothing for plain HTTP URLs.
+							</p>
 
 							<div class="pb-actions">
 								<button class="pb-btn" id="btn-test-connection" type="button">Test</button>
@@ -247,6 +273,7 @@
 				const webauthEl = document.getElementById("field-webauth");
 				const userEl = document.getElementById("field-phantomUser");
 				const tlsEl = document.getElementById("field-allowInsecureTls");
+				const tlsWarnEl = document.getElementById("tls-insecure-warning");
 				const commandEl = document.getElementById("field-command");
 				const testConnectionBtn = document.getElementById("btn-test-connection");
 				const connectionStatusEl = document.getElementById("connection-status");
@@ -266,6 +293,15 @@
 						phantomUser: userEl.value.trim(),
 						allowInsecureTls: tlsEl.checked
 					};
+				}
+
+				function updateTlsInsecureWarning() {
+					if (!tlsWarnEl) return;
+					if (tlsEl.checked) {
+						tlsWarnEl.classList.add("is-visible");
+					} else {
+						tlsWarnEl.classList.remove("is-visible");
+					}
 				}
 
 				function scheduleSaveGlobal() {
@@ -328,6 +364,7 @@
 					webauthEl.value = typeof s.webauth === "string" ? s.webauth : "";
 					userEl.value = typeof s.phantomUser === "string" ? s.phantomUser : "";
 					tlsEl.checked = toBool(s.allowInsecureTls);
+					updateTlsInsecureWarning();
 				}
 
 				function scheduleSaveCommand() {
@@ -379,8 +416,11 @@
 						baseUrlEl.addEventListener(ev, scheduleSaveGlobal);
 						webauthEl.addEventListener(ev, scheduleSaveGlobal);
 						userEl.addEventListener(ev, scheduleSaveGlobal);
-						tlsEl.addEventListener(ev, scheduleSaveGlobal);
 						commandEl.addEventListener(ev, scheduleSaveCommand);
+					});
+					tlsEl.addEventListener("change", function () {
+						updateTlsInsecureWarning();
+						scheduleSaveGlobal();
 					});
 
 					testConnectionBtn.addEventListener("click", runConnectionTest);

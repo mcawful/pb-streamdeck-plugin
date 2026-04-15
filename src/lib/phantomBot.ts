@@ -6,6 +6,7 @@ export type SendPhantomCommandOptions = {
 	webauth: string;
 	phantomUser: string;
 	message: string;
+	/** Skip TLS certificate verification for HTTPS only (insecure). */
 	allowInsecureTls?: boolean;
 };
 
@@ -48,6 +49,7 @@ export type TestPhantomBotConnectionOptions = {
 	baseUrl: string;
 	/** PhantomBot panel webauth token. */
 	webauth: string;
+	/** Skip TLS certificate verification for HTTPS only (insecure). */
 	allowInsecureTls?: boolean;
 };
 

@@ -21,7 +21,9 @@
 	"Category": "PhantomBot",
 	"CategoryIcon": "imgs/plugin/category-icon",
 	"CodePath": "bin/plugin.js",
-	"Description": "Run PhantomBot commands from Stream Deck.",
+	"Description": "Run PhantomBot chat commands directly from your Stream Deck. Talks to PhantomBot over its authenticated HTTP API.\n\nFan-made by McAwful. This is not official PhantomBot software. It is not affiliated with, endorsed by, or supported by the PhantomBot project.\n\nBugs, questions, or ideas: use the Support link below.",
+	"URL": "https://github.com/mcawful/pb-streamdeck-plugin",
+	"SupportURL": "https://github.com/mcawful/pb-streamdeck-plugin/issues",
 	"Icon": "imgs/plugin/marketplace",
 	"SDKVersion": 2,
 	"Software": {

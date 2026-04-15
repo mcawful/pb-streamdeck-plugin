@@ -29,13 +29,20 @@ export class PhantomCommand extends SingletonAction<PhantomCommandActionSettings
 
 		const message = asPhantomBotCommandMessage(command);
 
+		const allowInsecureTls = toBool(globals.allowInsecureTls);
+		if (allowInsecureTls && baseUrl.toLowerCase().startsWith("https:")) {
+			streamdeck.logger.warn(
+				"PhantomBot: HTTPS without certificate verification (option enabled). Untrusted networks can impersonate your bot (MITM)."
+			);
+		}
+
 		try {
 			const result = await sendPhantomCommand({
 				baseUrl,
 				webauth,
 				phantomUser,
 				message,
-				allowInsecureTls: toBool(globals.allowInsecureTls)
+				allowInsecureTls
 			});
 
 			if (result.ok) {
