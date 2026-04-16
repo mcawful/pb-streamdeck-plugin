@@ -1,5 +1,11 @@
 /**
- * Plugin-wide settings (Stream Deck global settings). Persisted for the plugin; not duplicated on each key.
+ * Shared Stream Deck plugin settings types (global vs per-action).
+ *
+ * @module
+ */
+
+/**
+ * Plugin-wide settings (Stream Deck global settings). Persisted once for the plugin, not per key.
  */
 export type PluginGlobalSettings = {
 	baseUrl?: string;

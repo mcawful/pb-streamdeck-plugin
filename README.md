@@ -25,8 +25,8 @@ Third-party Stream Deck plugin that sends **PhantomBot chat commands** over the 
 3. Build: `npm run build`  
    Output is written into `com.mcawful.pbstreamdeck.sdPlugin/bin/plugin.js`.
 4. Register the plugin with Stream Deck, for example:
-   - **`streamdeck link`** from [@elgato/cli](https://www.npmjs.com/package/@elgato/cli) pointed at `com.mcawful.pbstreamdeck.sdPlugin`, or  
-   - Copy the entire `com.mcawful.pbstreamdeck.sdPlugin` folder into Stream Deck’s plugins directory (platform-specific).
+    - **`streamdeck link`** from [@elgato/cli](https://www.npmjs.com/package/@elgato/cli) pointed at `com.mcawful.pbstreamdeck.sdPlugin`, or
+    - Copy the entire `com.mcawful.pbstreamdeck.sdPlugin` folder into Stream Deck’s plugins directory (platform-specific).
 
 Restart Stream Deck or run `streamdeck restart com.mcawful.pbstreamdeck` after updating.
 
@@ -36,9 +36,9 @@ Restart Stream Deck or run `streamdeck restart com.mcawful.pbstreamdeck` after u
 2. Open the property inspector for that key.
 3. Under **Command**, enter the chat command (with or without `!`).
 4. Expand **Bot connection configuration** and set:
-   - **Bot URL** — Base URL of your PhantomBot HTTP endpoint (no trailing slash required).
-   - **Bot webauth token** — Panel webauth token used in the `webauth` header.
-   - **Bot Twitch username** — Value sent as the `user` header (who the command runs as for PhantomBot).
+    - **Bot URL** — Base URL of your PhantomBot HTTP endpoint (no trailing slash required).
+    - **Bot webauth token** — Panel webauth token used in the `webauth` header.
+    - **Bot Twitch username** — Value sent as the `user` header (who the command runs as for PhantomBot).
 5. Use **Test** to confirm the bot answers. If HTTPS fails because of certificate trust, enable **Don’t verify HTTPS certificates** only when you understand the risk (see the in-app warning).
 6. In the Stream Deck canvas, set the key **Title** to whatever you want shown on the device.
 
@@ -48,11 +48,11 @@ On key press, the plugin sends an authenticated **`PUT`** to `{baseUrl}/dbquery`
 
 ## Development
 
-| Command | Purpose |
-|--------|---------|
-| `npm run build` | Production bundle into `com.mcawful.pbstreamdeck.sdPlugin/bin/` |
-| `npm run watch` | Rebuild on change and restart the plugin (`streamdeck restart com.mcawful.pbstreamdeck`) |
-| `npm run typecheck` | `tsc --noEmit` |
+| Command             | Purpose                                                                                  |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| `npm run build`     | Production bundle into `com.mcawful.pbstreamdeck.sdPlugin/bin/`                          |
+| `npm run watch`     | Rebuild on change and restart the plugin (`streamdeck restart com.mcawful.pbstreamdeck`) |
+| `npm run typecheck` | `tsc --noEmit`                                                                           |
 
 Optional: validate the plugin package with [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/commands/validate) `streamdeck validate com.mcawful.pbstreamdeck.sdPlugin`.
 

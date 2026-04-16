@@ -13,7 +13,12 @@
 			}
 
 			html {
-				font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+				font-family:
+					system-ui,
+					-apple-system,
+					BlinkMacSystemFont,
+					"Segoe UI",
+					sans-serif;
 			}
 
 			body {
@@ -138,6 +143,26 @@
 				color: #ffb090;
 			}
 
+			.pb-http-warn {
+				display: none;
+				margin: 0 0 10px 0;
+				padding: 8px 10px;
+				font-size: 0.72rem;
+				line-height: 1.45;
+				color: #f5cccc;
+				background: rgba(180, 55, 55, 0.16);
+				border: 1px solid rgba(220, 100, 100, 0.38);
+				border-radius: 6px;
+			}
+
+			.pb-http-warn.is-visible {
+				display: block;
+			}
+
+			.pb-http-warn strong {
+				color: #ff9b9b;
+			}
+
 			.pb-actions {
 				display: flex;
 				align-items: center;
@@ -219,26 +244,50 @@
 				<hr class="pb-rule" />
 
 				<section aria-labelledby="pb-srv-kicker">
-					<details class="pb-collapse" open>
+					<details class="pb-collapse">
 						<summary>
 							<p class="pb-kicker" id="pb-srv-kicker">Bot connection configuration</p>
 						</summary>
 						<div class="pb-collapse-body">
-							<p class="pb-micro" style="margin: 0 0 10px 0">Sets up the connection between the plugin and your PhantomBot instance.</p>
+							<p class="pb-micro" style="margin: 0 0 10px 0">
+								Sets up the connection between the plugin and your PhantomBot instance.
+							</p>
+							<p class="pb-micro" style="margin: 0 0 10px 0">
+								You usually only need to configure this once. Update it only if your bot URL, token, or
+								bot username changes.
+							</p>
 
 							<div class="pb-field">
 								<label class="pb-label" for="field-baseUrl">Bot URL</label>
-								<input class="pb-input" id="field-baseUrl" type="text" autocomplete="off" placeholder="https://127.0.0.1:25000" />
+								<input
+									class="pb-input"
+									id="field-baseUrl"
+									type="text"
+									autocomplete="off"
+									placeholder="https://127.0.0.1:25000"
+								/>
 							</div>
 
 							<div class="pb-field">
 								<label class="pb-label" for="field-webauth">Bot webauth token</label>
-								<input class="pb-input" id="field-webauth" type="password" autocomplete="off" placeholder="from PhantomBot botlogin.txt file" />
+								<input
+									class="pb-input"
+									id="field-webauth"
+									type="password"
+									autocomplete="off"
+									placeholder="from PhantomBot botlogin.txt file"
+								/>
 							</div>
 
 							<div class="pb-field">
 								<label class="pb-label" for="field-phantomUser">Bot Twitch username</label>
-								<input class="pb-input" id="field-phantomUser" type="text" autocomplete="off" placeholder="bot Twitch username" />
+								<input
+									class="pb-input"
+									id="field-phantomUser"
+									type="text"
+									autocomplete="off"
+									placeholder="bot Twitch username"
+								/>
 							</div>
 
 							<div class="pb-field pb-row-check">
@@ -246,14 +295,20 @@
 									class="pb-label"
 									for="field-allowInsecureTls"
 									title="Skips TLS certificate verification for https:// URLs only. Insecure: use on trusted or local networks, or with self-signed dev certs."
-									>Don’t verify HTTPS certificates</label>
+									>Don’t verify HTTPS certificates</label
+								>
 								<input class="pb-checkbox" id="field-allowInsecureTls" type="checkbox" />
 							</div>
 
 							<p id="tls-insecure-warning" class="pb-insecure-warn" role="status" aria-live="polite">
-								<strong>Insecure.</strong> HTTPS connections will not validate the server certificate. Someone on an
-								untrusted network could impersonate your bot (MITM). Prefer <code>http://</code> or a proper certificate
-								when you can. This option does nothing for plain HTTP URLs.
+								<strong>Insecure.</strong> HTTPS connections will not validate the server certificate.
+								Someone on an untrusted network could impersonate your bot (MITM). Prefer a proper
+								certificate when you can. This option does nothing for plain HTTP URLs.
+							</p>
+							<p id="http-url-warning" class="pb-http-warn" role="status" aria-live="polite">
+								<strong>Warning.</strong> This URL uses plain HTTP, so traffic is unencrypted and can be
+								read or modified by others on the network. This is usually fine on a trusted local
+								network, but prefer an <code>https://</code> URL for remote or untrusted networks.
 							</p>
 
 							<div class="pb-actions">
@@ -274,6 +329,7 @@
 				const userEl = document.getElementById("field-phantomUser");
 				const tlsEl = document.getElementById("field-allowInsecureTls");
 				const tlsWarnEl = document.getElementById("tls-insecure-warning");
+				const httpWarnEl = document.getElementById("http-url-warning");
 				const commandEl = document.getElementById("field-command");
 				const testConnectionBtn = document.getElementById("btn-test-connection");
 				const connectionStatusEl = document.getElementById("connection-status");
@@ -291,7 +347,7 @@
 						baseUrl: baseUrlEl.value.trim(),
 						webauth: webauthEl.value,
 						phantomUser: userEl.value.trim(),
-						allowInsecureTls: tlsEl.checked
+						allowInsecureTls: tlsEl.checked,
 					};
 				}
 
@@ -301,6 +357,19 @@
 						tlsWarnEl.classList.add("is-visible");
 					} else {
 						tlsWarnEl.classList.remove("is-visible");
+					}
+				}
+
+				function isPlainHttpUrl(value) {
+					return typeof value === "string" && value.trim().toLowerCase().startsWith("http://");
+				}
+
+				function updateHttpUrlWarning() {
+					if (!httpWarnEl) return;
+					if (isPlainHttpUrl(baseUrlEl.value)) {
+						httpWarnEl.classList.add("is-visible");
+					} else {
+						httpWarnEl.classList.remove("is-visible");
 					}
 				}
 
@@ -345,7 +414,7 @@
 
 					const payload = {
 						event: "testConnection",
-						settings: readGlobalForm()
+						settings: readGlobalForm(),
 					};
 
 					try {
@@ -365,6 +434,7 @@
 					userEl.value = typeof s.phantomUser === "string" ? s.phantomUser : "";
 					tlsEl.checked = toBool(s.allowInsecureTls);
 					updateTlsInsecureWarning();
+					updateHttpUrlWarning();
 				}
 
 				function scheduleSaveCommand() {
@@ -413,7 +483,10 @@
 					await loadActionSettings();
 
 					["input", "change"].forEach(function (ev) {
-						baseUrlEl.addEventListener(ev, scheduleSaveGlobal);
+						baseUrlEl.addEventListener(ev, function () {
+							updateHttpUrlWarning();
+							scheduleSaveGlobal();
+						});
 						webauthEl.addEventListener(ev, scheduleSaveGlobal);
 						userEl.addEventListener(ev, scheduleSaveGlobal);
 						commandEl.addEventListener(ev, scheduleSaveCommand);

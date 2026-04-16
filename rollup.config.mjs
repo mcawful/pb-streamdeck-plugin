@@ -27,7 +27,7 @@ const config = {
 		sourcemap: isWatching,
 		sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
 			return url.pathToFileURL(path.resolve(path.dirname(sourcemapPath), relativeSourcePath)).href;
-		}
+		},
 	},
 	plugins: [
 		{
@@ -35,26 +35,26 @@ const config = {
 			buildStart: function () {
 				this.addWatchFile(`${sdPlugin}/manifest.json`);
 				this.addWatchFile(`${sdPlugin}/ui/phantomCommand.html`);
-			}
+			},
 		},
 		typescript({
-			mapRoot: isWatching ? "./" : undefined
+			mapRoot: isWatching ? "./" : undefined,
 		}),
 		nodeResolve({
 			browser: false,
 			exportConditions: ["node"],
-			preferBuiltins: true
+			preferBuiltins: true,
 		}),
 		commonjs({
-			ignore: ["node:sqlite"]
+			ignore: ["node:sqlite"],
 		}),
 		{
 			name: "emit-module-package-file",
 			generateBundle() {
 				this.emitFile({ fileName: "package.json", source: `{ "type": "module" }`, type: "asset" });
-			}
-		}
-	]
+			},
+		},
+	],
 };
 
 export default config;
