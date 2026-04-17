@@ -87,16 +87,19 @@ Under **Command**, enter the chat command **with or without** `!` (for example `
 ### Repository layout
 
 ```
-com.mcawful.pbstreamdeck.sdPlugin/   # Plugin bundle: manifest, UI, icons, compiled output
-  bin/plugin.js                      # Produced by `npm run build` (do not edit by hand)
-  ui/phantomControl.html             # Property inspector (HTML + inline script)
-src/
-  plugin.ts                          # Registers actions; handles inspector → plugin messages (e.g. connection test)
-  actions/runCommand.ts              # Run Command action: keyDown → PhantomBot HTTP
-  settings.ts                        # Global vs per-action settings types
-  lib/phantomBot.ts                  # Undici HTTP: command PUT, connection test GET
-  lib/toBool.ts                      # Boolean coercion for persisted settings
-  lib/streamDeckConnection.ts        # Re-export for sendToPropertyInspector with explicit context
+com.mcawful.pbstreamdeck.sdPlugin/   # Shipped plugin bundle (manifest, locale, UI, icons, Rollup output)
+  manifest.json                      # Plugin metadata, actions, Stream Deck / Node version requirements
+  en.json                              # English strings (store / UI)
+  bin/plugin.js                        # Produced by `npm run build` (do not edit by hand)
+  ui/phantomControl.html               # Property inspector (HTML + inline script)
+  imgs/plugin/                         # Marketplace, category, and action imagery
+src/                                   # TypeScript source (compiled into bin/plugin.js)
+  plugin.ts                            # Entry: register actions; inspector → plugin (e.g. connection test)
+  actions/runCommand.ts                # Run Command action: keyDown → PhantomBot HTTP
+  settings.ts                          # Global vs per-action settings types
+  lib/phantomBot.ts                    # Undici: PUT /dbquery, GET /games connection test
+  lib/toBool.ts                        # Boolean coercion for persisted settings
+  lib/streamDeckConnection.ts          # sendToPropertyInspector with explicit action context
 ```
 
 ### Build from source
@@ -118,21 +121,17 @@ This rebuilds on change and runs `streamdeck restart com.mcawful.pbstreamdeck` w
 
 ### Scripts
 
-| Command                | Purpose                                                                |
-| ---------------------- | ---------------------------------------------------------------------- |
-| `npm run build`        | Production Rollup bundle into `com.mcawful.pbstreamdeck.sdPlugin/bin/` |
-| `npm run watch`        | Watch mode + restart plugin (see note above)                           |
-| `npm run typecheck`    | `tsc --noEmit`                                                         |
-| `npm run format`       | `prettier --write .` (respects `.prettierignore`)                      |
-| `npm run format:check` | `prettier --check .` — useful in CI                                    |
+| Command                | Purpose                                                                                 |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| `npm run build`        | Production Rollup bundle into `com.mcawful.pbstreamdeck.sdPlugin/bin/`                  |
+| `npm run watch`        | Watch mode + restart plugin (see note above)                                            |
+| `npm run typecheck`    | `tsc --noEmit`                                                                          |
+| `npm run format`       | `prettier --write .` (respects `.prettierignore`)                                       |
+| `npm run format:check` | `prettier --check .` — useful in CI                                                     |
+| `npm run validate`     | `streamdeck validate com.mcawful.pbstreamdeck.sdPlugin` (requires Elgato CLI on `PATH`) |
+| `npm run pack`         | `npm run build` then `streamdeck pack …` → `com.mcawful.pbstreamdeck.streamDeckPlugin`  |
 
-Optional validation:
-
-```bash
-streamdeck validate com.mcawful.pbstreamdeck.sdPlugin
-```
-
-See [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/commands/validate).
+Elgato CLI: [validate](https://docs.elgato.com/streamdeck/cli/commands/validate), [pack](https://docs.elgato.com/streamdeck/cli/commands/pack).
 
 ### How it talks to PhantomBot (technical)
 
@@ -150,17 +149,19 @@ The UI loads [sdpi-components](https://sdpi-components.dev/) from the CDN declar
 
 ### Node.js debugging (manifest)
 
-Released builds use **`Nodejs.Debug`: `disabled`** in `manifest.json` (better for end users). For local debugging you may temporarily set it to **`enabled`** so you can attach a debugger to the plugin process; revert before shipping a store or release build.
+Released builds use **`Nodejs.Debug`: `disabled`** in `manifest.json` (better for end users). For local debugging you may temporarily set it to **`enabled`** so you can attach a debugger to the plugin process; revert before shipping a release build.
 
 ### Packaging a release
 
-After `npm run build`, create a distributable plugin with Elgato CLI (exact flags may vary by CLI version):
+From the repository root (after dependencies are installed):
 
 ```bash
-streamdeck pack com.mcawful.pbstreamdeck.sdPlugin
+npm run pack
 ```
 
-Consult **`streamdeck pack --help`** and the [packaging documentation](https://docs.elgato.com/streamdeck/cli/packaging/creating-plugins) for the current workflow.
+That runs a production build, then **`streamdeck pack`** on `com.mcawful.pbstreamdeck.sdPlugin`. The `.streamDeckPlugin` file is written next to that folder (see **`streamdeck pack --help`**). Overview: [Distribution / packaging](https://docs.elgato.com/sdk/plugins/packaging).
+
+When you tag a release, bump **`manifest.json` → `Version`** (four parts, e.g. `1.0.1.0`) and **`package.json` → `version`** (semver, e.g. `1.0.1`) together.
 
 ### Stack
 

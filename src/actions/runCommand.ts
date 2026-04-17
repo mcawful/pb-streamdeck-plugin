@@ -15,7 +15,7 @@ export class RunCommandAction extends SingletonAction<RunCommandActionSettings> 
 	/**
 	 * Reads global and per-key settings, validates them, then `PUT`s to PhantomBot `/dbquery`.
 	 *
-	 * @param ev Stream Deck key-down event with this key’s `command` setting.
+	 * @param ev Stream Deck key-down event with this key's `command` setting.
 	 */
 	override async onKeyDown(ev: KeyDownEvent<RunCommandActionSettings>): Promise<void> {
 		if (!ev.action.isKey()) return;
@@ -73,7 +73,7 @@ export class RunCommandAction extends SingletonAction<RunCommandActionSettings> 
 }
 
 /**
- * Normalizes user input for PhantomBot’s `message` header (chat commands must start with `!`).
+ * Normalizes user input for PhantomBot's `message` header (chat commands must start with `!`).
  *
  * @param raw Command from the property inspector (with or without leading `!`).
  * @returns Trimmed string with a leading `!` when non-empty and not already present.

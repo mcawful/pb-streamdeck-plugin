@@ -1,9 +1,20 @@
 /**
- * HTTP helpers for PhantomBot’s authenticated panel API (command execution and connection checks).
+ * HTTP helpers for PhantomBot's authenticated panel API (command execution and connection checks).
  *
  * @module
  */
 import { Agent, type RequestInit, fetch as undiciFetch } from "undici";
+
+/** Applies Undici `Agent` with `rejectUnauthorized: false` when insecure HTTPS is requested. */
+function withOptionalInsecureTls(allowInsecureTls: boolean | undefined, init: RequestInit): RequestInit {
+	if (!allowInsecureTls) return init;
+	return {
+		...init,
+		dispatcher: new Agent({
+			connect: { rejectUnauthorized: false },
+		}),
+	};
+}
 
 /** Options for {@link sendPhantomCommand}. */
 export type SendPhantomCommandOptions = {
@@ -36,18 +47,10 @@ export async function sendPhantomCommand(
 		webauth: options.webauth,
 	};
 
-	const init: RequestInit = {
+	const init = withOptionalInsecureTls(options.allowInsecureTls, {
 		method: "PUT",
 		headers,
-	};
-
-	if (options.allowInsecureTls) {
-		init.dispatcher = new Agent({
-			connect: {
-				rejectUnauthorized: false,
-			},
-		});
-	}
+	});
 
 	const res = await undiciFetch(url, init);
 	const body = await res.text();
@@ -81,19 +84,11 @@ export async function testPhantomBotConnection(
 	const timeoutMs = 12_000;
 	const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-	const init: RequestInit = {
+	const init = withOptionalInsecureTls(options.allowInsecureTls, {
 		method: "GET",
 		headers,
 		signal: controller.signal,
-	};
-
-	if (options.allowInsecureTls) {
-		init.dispatcher = new Agent({
-			connect: {
-				rejectUnauthorized: false,
-			},
-		});
-	}
+	});
 
 	try {
 		const res = await undiciFetch(url, init);
