@@ -1,79 +1,178 @@
-# PhantomBot Command (Stream Deck)
+# PhantomBot Control (Stream Deck)
 
-Third-party Stream Deck plugin that sends **PhantomBot chat commands** over the bot’s authenticated HTTP API. Configure your bot once, assign a command per key, press to run.
+Control **PhantomBot** from your Elgato Stream Deck. The plugin talks to your bot over PhantomBot's **authenticated HTTP panel API**. Today you can **run chat commands** from keys (one command per key); the codebase is structured so more actions can be added later.
 
 > **Not official PhantomBot software.** This project is independent: it is not affiliated with, endorsed by, or supported by the [PhantomBot](https://github.com/PhantomBot/PhantomBot) project. Author: **McAwful**.
 
-## Features
+**Contents:** [What you get](#what-you-get) · [For Stream Deck users](#for-stream-deck-users) · [For developers](#for-developers) · [Security and privacy](#security-and-privacy) · [Links](#links) · [License](#license)
 
-- **Per-key command** — Each button stores its own command text; the plugin adds a leading `!` if you omit it (PhantomBot treats `!` as a chat command).
-- **Shared bot settings** — Bot URL, panel webauth token, and Twitch username are saved once as plugin global settings (same for every key).
-- **Test** — Check URL and token from the property inspector before relying on keys.
-- **HTTPS options** — Optional “don’t verify HTTPS certificates” for self-signed or local dev TLS, with in-app warnings when enabled.
-- **Key title** — The label on the device is whatever you set in Stream Deck’s **Title** field; it is not copied from the command text.
+---
 
-## Requirements
+## What you get
 
-- **Stream Deck** app **6.5** or newer (see `manifest.json` → `Software.MinimumVersion`).
-- **Node.js 20** — Used by Stream Deck to run this plugin at runtime (see `manifest.json` → `Nodejs`).
-- **PhantomBot** with HTTP/panel access and a valid **webauth** token (from your bot panel / `botlogin.txt`, depending on your setup).
+- **Per-key command** — Each key stores its own command text. The plugin adds a leading `!` if you omit it (PhantomBot treats `!` as a chat command).
+- **Shared bot settings** — Bot URL, panel **webauth** token, and bot Twitch username are saved once as **plugin global settings** (shared by every key).
+- **Connection test** — From the property inspector, **Test** checks URL and token before you rely on keys.
+- **TLS options** — Optional **Don't verify HTTPS certificates** for self-signed or broken chains, with in-app warnings. Plain `http://` is supported with its own warning (often fine on a trusted local network).
+- **Key title** — The label on the device is whatever you set in Stream Deck's **Title** field; it is not copied from the command text.
 
-## Install (from source)
+---
 
-1. Clone this repository.
-2. Install dependencies: `npm install`
-3. Build: `npm run build`  
-   Output is written into `com.mcawful.pbstreamdeck.sdPlugin/bin/plugin.js`.
-4. Register the plugin with Stream Deck, for example:
-    - **`streamdeck link`** from [@elgato/cli](https://www.npmjs.com/package/@elgato/cli) pointed at `com.mcawful.pbstreamdeck.sdPlugin`, or
-    - Copy the entire `com.mcawful.pbstreamdeck.sdPlugin` folder into Stream Deck’s plugins directory (platform-specific).
+## For Stream Deck users
 
-Restart Stream Deck or run `streamdeck restart com.mcawful.pbstreamdeck` after updating.
+### What you need
 
-## Configure
+- **Stream Deck** app **6.5** or newer (see `com.mcawful.pbstreamdeck.sdPlugin/manifest.json` → `Software.MinimumVersion`).
+- **Node.js 20** on your PC — Stream Deck runs this plugin with the embedded Node runtime version declared in the manifest (`Nodejs.Version`).
+- **PhantomBot** reachable over HTTP/HTTPS, with a valid panel **webauth** token (often from `botlogin.txt` or your panel setup, depending on how you run PhantomBot).
 
-1. Add the **Run command** action from the **PhantomBot** category.
-2. Open the property inspector for that key.
-3. Under **Command**, enter the chat command (with or without `!`).
-4. Expand **Bot connection configuration** and set:
-    - **Bot URL** — Base URL of your PhantomBot HTTP endpoint (no trailing slash required).
-    - **Bot webauth token** — Panel webauth token used in the `webauth` header.
-    - **Bot Twitch username** — Value sent as the `user` header (who the command runs as for PhantomBot).
-5. Use **Test** to confirm the bot answers. If HTTPS fails because of certificate trust, enable **Don’t verify HTTPS certificates** only when you understand the risk (see the in-app warning).
-6. In the Stream Deck canvas, set the key **Title** to whatever you want shown on the device.
+### Install the plugin
 
-## How it talks to PhantomBot
+How you install depends on what you downloaded.
 
-On key press, the plugin sends an authenticated **`PUT`** to `{baseUrl}/dbquery` with headers `user`, `message`, and `webauth`. The connection test uses a lightweight authenticated **`GET`** to `{baseUrl}/games?search=…`. Behavior matches PhantomBot’s HTTP handler expectations; see the PhantomBot source for details.
+**If you have a packaged plugin** (for example a `.streamDeckPlugin` file from [Releases](https://github.com/mcawful/pb-streamdeck-plugin/releases)):
 
-## Development
+1. Close Stream Deck if the installer asks you to.
+2. Open the file; Stream Deck should register the plugin.
+3. Restart Stream Deck if the new plugin does not appear.
 
-| Command             | Purpose                                                                                  |
-| ------------------- | ---------------------------------------------------------------------------------------- |
-| `npm run build`     | Production bundle into `com.mcawful.pbstreamdeck.sdPlugin/bin/`                          |
-| `npm run watch`     | Rebuild on change and restart the plugin (`streamdeck restart com.mcawful.pbstreamdeck`) |
-| `npm run typecheck` | `tsc --noEmit`                                                                           |
+**If you are using this repository (advanced):** you must build the JavaScript bundle first. See [Build from source](#build-from-source) below, then register the `com.mcawful.pbstreamdeck.sdPlugin` folder with Stream Deck (for example with **`streamdeck link`** from [@elgato/cli](https://www.npmjs.com/package/@elgato/cli), or by copying the folder into Stream Deck's plugins directory for your OS).
 
-Optional: validate the plugin package with [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/commands/validate) `streamdeck validate com.mcawful.pbstreamdeck.sdPlugin`.
+After an update, restart Stream Deck or run:
 
-Stack: [Elgato `@elgato/streamdeck`](https://www.npmjs.com/package/@elgato/streamdeck) SDK, TypeScript, Rollup, [Undici](https://github.com/nodejs/undici) for HTTP. The property inspector uses [sdpi-components](https://sdpi-components.dev/) (loaded from CDN in `phantomCommand.html`).
+```bash
+streamdeck restart com.mcawful.pbstreamdeck
+```
 
-## Layout
+### First-time setup (bot connection)
+
+You usually configure the bot **once** for the whole plugin. Change it only if your URL, token, or bot username changes.
+
+1. Add the **Run Command** action from the **PhantomBot** category.
+2. Select the key and open the **property inspector** (right-hand panel in Stream Deck).
+3. Expand **Bot connection configuration**.
+4. Set:
+    - **Bot URL** — Base URL of PhantomBot's HTTP endpoint (with `http://` or `https://`). A trailing slash is optional.
+    - **Bot webauth token** — Sent as the `webauth` header (panel token).
+    - **Bot Twitch username** — Sent as the `user` header (who PhantomBot treats as sending the command for permission checks).
+5. Click **Test**. You should see a success message if URL and token are correct.
+6. If you use **HTTPS** and it fails only because of certificate trust (self-signed, local CA, etc.), you may enable **Don't verify HTTPS certificates** after reading the warning. Prefer fixing the certificate when you can.
+7. If you use **`http://`**, read the in-app warning: traffic is not encrypted; that is often acceptable on a **trusted local network** only.
+
+### Command field
+
+Under **Command**, enter the chat command **with or without** `!` (for example `commercial 30` or `!commercial 30`). Set the key **Title** in Stream Deck to whatever you want shown on the hardware.
+
+### Troubleshooting (users)
+
+- **Alert on key press** — Often missing global settings (URL, token, username), empty command, or PhantomBot returned an error. Check Stream Deck **plugin logs** if needed (Stream Deck → plugin / diagnostics depending on version).
+- **Test never completes** — Firewall, wrong URL, or PhantomBot not running. Confirm the URL opens from a browser on the same machine when appropriate.
+- **HTTPS works in browser but not in plugin** — Certificate trust issue; try the verify option only if you understand the risk, or use `http://` on a trusted LAN.
+
+---
+
+## For developers
+
+### Repository layout
 
 ```
-com.mcawful.pbstreamdeck.sdPlugin/   # Plugin bundle (manifest, UI, icons, compiled JS)
+com.mcawful.pbstreamdeck.sdPlugin/   # Plugin bundle: manifest, UI, icons, compiled output
+  bin/plugin.js                      # Produced by `npm run build` (do not edit by hand)
+  ui/phantomControl.html             # Property inspector (HTML + inline script)
 src/
-  plugin.ts                          # Registers actions, connection test handler
-  actions/phantomCommand.ts          # Key press → HTTP request
-  lib/phantomBot.ts                  # PhantomBot HTTP helpers
-  lib/toBool.ts                      # Shared boolean coercion for settings
-  lib/streamDeckConnection.ts        # Low-level reply path to the property inspector
+  plugin.ts                          # Registers actions; handles inspector → plugin messages (e.g. connection test)
+  actions/runCommand.ts              # Run Command action: keyDown → PhantomBot HTTP
+  settings.ts                        # Global vs per-action settings types
+  lib/phantomBot.ts                  # Undici HTTP: command PUT, connection test GET
+  lib/toBool.ts                      # Boolean coercion for persisted settings
+  lib/streamDeckConnection.ts        # Re-export for sendToPropertyInspector with explicit context
 ```
+
+### Build from source
+
+```bash
+npm install
+npm run build
+```
+
+Output: `com.mcawful.pbstreamdeck.sdPlugin/bin/plugin.js`.
+
+During development:
+
+```bash
+npm run watch
+```
+
+This rebuilds on change and runs `streamdeck restart com.mcawful.pbstreamdeck` when the Rollup watch cycle ends (requires Elgato CLI on your `PATH`).
+
+### Scripts
+
+| Command                | Purpose                                                                |
+| ---------------------- | ---------------------------------------------------------------------- |
+| `npm run build`        | Production Rollup bundle into `com.mcawful.pbstreamdeck.sdPlugin/bin/` |
+| `npm run watch`        | Watch mode + restart plugin (see note above)                           |
+| `npm run typecheck`    | `tsc --noEmit`                                                         |
+| `npm run format`       | `prettier --write .` (respects `.prettierignore`)                      |
+| `npm run format:check` | `prettier --check .` — useful in CI                                    |
+
+Optional validation:
+
+```bash
+streamdeck validate com.mcawful.pbstreamdeck.sdPlugin
+```
+
+See [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/commands/validate).
+
+### How it talks to PhantomBot (technical)
+
+On **key press**, the plugin sends an authenticated **`PUT`** to `{baseUrl}/dbquery` with headers `user`, `message`, and `webauth`. The `message` body is normalized so chat commands start with `!`.
+
+The **connection test** sends an authenticated **`GET`** to `{baseUrl}/games?search=…` (lightweight, auth-gated). Timeouts and errors are surfaced in the property inspector.
+
+HTTP is implemented with [Undici](https://github.com/nodejs/undici). Optional `rejectUnauthorized: false` is applied only when the user enables insecure HTTPS and the URL scheme is `https:`.
+
+For PhantomBot server behavior, refer to upstream source (for example `HTTPAuthenticatedHandler` and related HTTP handlers in the PhantomBot repo).
+
+### Property inspector
+
+The UI loads [sdpi-components](https://sdpi-components.dev/) from the CDN declared in `phantomControl.html`. Global settings and per-key settings are read/written through the Stream Deck client APIs in that script.
+
+### Node.js debugging (manifest)
+
+Released builds use **`Nodejs.Debug`: `disabled`** in `manifest.json` (better for end users). For local debugging you may temporarily set it to **`enabled`** so you can attach a debugger to the plugin process; revert before shipping a store or release build.
+
+### Packaging a release
+
+After `npm run build`, create a distributable plugin with Elgato CLI (exact flags may vary by CLI version):
+
+```bash
+streamdeck pack com.mcawful.pbstreamdeck.sdPlugin
+```
+
+Consult **`streamdeck pack --help`** and the [packaging documentation](https://docs.elgato.com/streamdeck/cli/packaging/creating-plugins) for the current workflow.
+
+### Stack
+
+- [Elgato `@elgato/streamdeck`](https://www.npmjs.com/package/@elgato/streamdeck) SDK (TypeScript)
+- [Rollup](https://rollupjs.org/) for bundling
+- [Undici](https://github.com/nodejs/undici) for HTTP
+
+---
+
+## Security and privacy
+
+- **Webauth and URL** are stored in Stream Deck **global plugin settings** (like other plugins). Treat the machine account and Stream Deck backups accordingly.
+- **`http://`** sends tokens and commands in **cleartext** on the network segment between Stream Deck's host and PhantomBot.
+- **Disable certificate verification** for HTTPS weakens TLS and is intended only for controlled environments; the UI explains the tradeoff.
+
+---
 
 ## Links
 
 - **This repo:** [github.com/mcawful/pb-streamdeck-plugin](https://github.com/mcawful/pb-streamdeck-plugin) — [Issues](https://github.com/mcawful/pb-streamdeck-plugin/issues)
 - **PhantomBot (upstream):** [github.com/PhantomBot/PhantomBot](https://github.com/PhantomBot/PhantomBot)
+
+---
 
 ## License
 

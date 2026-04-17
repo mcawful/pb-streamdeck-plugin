@@ -6,6 +6,6 @@
 	version="1.1"
 	xmlns="http://www.w3.org/2000/svg"
 >
-	<rect x="15.24" y="4.762" width="7.62" height="23.5" rx="3.81" fill="#ffffff" fill-opacity="0.23" />
-	<circle cx="19.05" cy="33" r="3.81" fill="#ffffff" fill-opacity="0.23" />
+	<rect x="15.24" y="3.026" width="7.62" height="23.5" rx="3.81" fill="#ffffff" fill-opacity="0.23" />
+	<circle cx="19.05" cy="31.264" r="3.81" fill="#ffffff" fill-opacity="0.23" />
 </svg>

@@ -7,17 +7,17 @@ import streamDeck, { action, KeyDownEvent, SingletonAction } from "@elgato/strea
 
 import { sendPhantomCommand } from "../lib/phantomBot";
 import { toBool } from "../lib/toBool";
-import type { PhantomCommandActionSettings, PluginGlobalSettings } from "../settings";
+import type { PluginGlobalSettings, RunCommandActionSettings } from "../settings";
 
 /** Runs one configured `!command` against PhantomBot using global URL, token, and bot user. */
 @action({ UUID: "com.mcawful.pbstreamdeck.command" })
-export class PhantomCommand extends SingletonAction<PhantomCommandActionSettings> {
+export class RunCommandAction extends SingletonAction<RunCommandActionSettings> {
 	/**
 	 * Reads global and per-key settings, validates them, then `PUT`s to PhantomBot `/dbquery`.
 	 *
 	 * @param ev Stream Deck key-down event with this key’s `command` setting.
 	 */
-	override async onKeyDown(ev: KeyDownEvent<PhantomCommandActionSettings>): Promise<void> {
+	override async onKeyDown(ev: KeyDownEvent<RunCommandActionSettings>): Promise<void> {
 		if (!ev.action.isKey()) return;
 
 		const globals = await streamDeck.settings.getGlobalSettings<PluginGlobalSettings>();

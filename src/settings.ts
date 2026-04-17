@@ -21,8 +21,8 @@ export type PluginGlobalSettings = {
 };
 
 /**
- * Per-key settings: only the command to run.
+ * Per-key settings for the Run command action: chat command text only.
  */
-export type PhantomCommandActionSettings = {
+export type RunCommandActionSettings = {
 	command?: string;
 };

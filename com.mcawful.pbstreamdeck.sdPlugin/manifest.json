@@ -1,14 +1,14 @@
 {
-    "Name": "PhantomBot Command",
-    "Version": "0.1.6.0",
+    "Name": "PhantomBot Control",
+    "Version": "1.0.0.0",
     "Author": "McAwful",
     "Actions": [
         {
-            "Name": "Run command",
+            "Name": "Run Command",
             "UUID": "com.mcawful.pbstreamdeck.command",
             "Icon": "imgs/actions/command/icon",
             "Tooltip": "Run a PhantomBot chat command.",
-            "PropertyInspectorPath": "ui/phantomCommand.html",
+            "PropertyInspectorPath": "ui/phantomControl.html",
             "Controllers": ["Keypad"],
             "States": [
                 {
@@ -21,7 +21,7 @@
     "Category": "PhantomBot",
     "CategoryIcon": "imgs/plugin/category-icon",
     "CodePath": "bin/plugin.js",
-    "Description": "Run PhantomBot chat commands directly from your Stream Deck. Talks to PhantomBot over its authenticated HTTP API.\n\nThird-party plugin by McAwful. This is not official PhantomBot software. It is not affiliated with, endorsed by, or supported by the PhantomBot project.\n\nBugs, questions, or ideas: use the Support link below.",
+    "Description": "Third-party plugin to control PhantomBot from your Stream Deck.",
     "URL": "https://github.com/mcawful/pb-streamdeck-plugin",
     "SupportURL": "https://github.com/mcawful/pb-streamdeck-plugin/issues",
     "Icon": "imgs/plugin/marketplace",
@@ -41,7 +41,7 @@
     ],
     "Nodejs": {
         "Version": "20",
-        "Debug": "enabled"
+        "Debug": "disabled"
     },
     "UUID": "com.mcawful.pbstreamdeck"
 }

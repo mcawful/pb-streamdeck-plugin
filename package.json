@@ -1,5 +1,20 @@
 {
     "name": "pb-streamdeck-plugin",
+    "version": "1.0.0",
+    "description": "Stream Deck plugin (PhantomBot Control): drive PhantomBot from keys via its authenticated HTTP API.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mcawful/pb-streamdeck-plugin.git"
+    },
+    "bugs": {
+        "url": "https://github.com/mcawful/pb-streamdeck-plugin/issues"
+    },
+    "keywords": [
+        "stream-deck",
+        "elgato",
+        "phantombot",
+        "plugin"
+    ],
     "scripts": {
         "build": "rollup -c",
         "format": "prettier --write .",

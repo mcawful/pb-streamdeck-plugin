@@ -6,7 +6,7 @@
  */
 import streamDeck from "@elgato/streamdeck";
 
-import { PhantomCommand } from "./actions/phantomCommand";
+import { RunCommandAction } from "./actions/runCommand";
 import { testPhantomBotConnection } from "./lib/phantomBot";
 import { connection } from "./lib/streamDeckConnection";
 import { toBool } from "./lib/toBool";
@@ -14,7 +14,7 @@ import type { PluginGlobalSettings } from "./settings";
 
 streamDeck.logger.setLevel("info");
 
-streamDeck.actions.registerAction(new PhantomCommand());
+streamDeck.actions.registerAction(new RunCommandAction());
 
 /** Payload shape the property inspector sends with `sendToPlugin`. */
 type InspectorRequest = {

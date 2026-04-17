@@ -1,8 +1,8 @@
 {
-    "Name": "PhantomBot Command",
-    "Description": "Run PhantomBot chat commands directly from your Stream Deck. Talks to PhantomBot over its authenticated HTTP API.\n\nThird-party plugin by McAwful. This is not official PhantomBot software. It is not affiliated with, endorsed by, or supported by the PhantomBot project.\n\nBugs, questions, or ideas: use the Support link below.",
+    "Name": "PhantomBot Control",
+    "Description": "Third-party plugin to control PhantomBot from your Stream Deck.",
     "com.mcawful.pbstreamdeck.command": {
-        "Name": "Run command",
+        "Name": "Run Command",
         "Tooltip": "Run a PhantomBot chat command."
     }
 }

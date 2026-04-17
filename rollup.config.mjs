@@ -34,7 +34,7 @@ const config = {
 			name: "watch-externals",
 			buildStart: function () {
 				this.addWatchFile(`${sdPlugin}/manifest.json`);
-				this.addWatchFile(`${sdPlugin}/ui/phantomCommand.html`);
+				this.addWatchFile(`${sdPlugin}/ui/phantomControl.html`);
 			},
 		},
 		typescript({

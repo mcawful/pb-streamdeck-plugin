@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>PhantomBot</title>
+		<title>PhantomBot Control</title>
 		<script src="https://sdpi-components.dev/releases/v3/sdpi-components.js"></script>
 		<style>
 			html,
@@ -267,6 +267,11 @@
 									placeholder="https://127.0.0.1:25000"
 								/>
 							</div>
+							<p id="http-url-warning" class="pb-http-warn" role="status" aria-live="polite">
+								<strong>Warning.</strong> This URL uses plain HTTP, so traffic is unencrypted and can be
+								read or modified by others on the network. This is usually fine on a trusted local
+								network, but prefer an <code>https://</code> URL for remote or untrusted networks.
+							</p>
 
 							<div class="pb-field">
 								<label class="pb-label" for="field-webauth">Bot webauth token</label>
@@ -304,11 +309,6 @@
 								<strong>Insecure.</strong> HTTPS connections will not validate the server certificate.
 								Someone on an untrusted network could impersonate your bot (MITM). Prefer a proper
 								certificate when you can. This option does nothing for plain HTTP URLs.
-							</p>
-							<p id="http-url-warning" class="pb-http-warn" role="status" aria-live="polite">
-								<strong>Warning.</strong> This URL uses plain HTTP, so traffic is unencrypted and can be
-								read or modified by others on the network. This is usually fine on a trusted local
-								network, but prefer an <code>https://</code> URL for remote or untrusted networks.
 							</p>
 
 							<div class="pb-actions">
