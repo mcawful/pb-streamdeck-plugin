@@ -1,0 +1,50 @@
+name: Release
+
+# Create a GitHub Release (and git tag) when a release-branch PR is merged into main.
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: >
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (github.head_ref == 'release' || startsWith(github.head_ref, 'release/'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout merge commit on main
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read version from package.json
+        id: pkg
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build and pack plugin
+        run: npm run pack
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.pkg.outputs.version }}
+          name: v${{ steps.pkg.outputs.version }}
+          generate_release_notes: true
+          files: "*.streamDeckPlugin"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
