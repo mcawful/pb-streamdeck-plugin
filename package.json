@@ -17,6 +17,8 @@
     ],
     "scripts": {
         "build": "rollup -c",
+        "validate": "streamdeck validate com.mcawful.pbstreamdeck.sdPlugin",
+        "pack": "npm run build && streamdeck pack com.mcawful.pbstreamdeck.sdPlugin",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "typecheck": "tsc --noEmit",

@@ -22,23 +22,34 @@ Control **PhantomBot** from your Elgato Stream Deck. The plugin talks to your bo
 
 ### What you need
 
-- **Stream Deck** app **6.5** or newer (see `com.mcawful.pbstreamdeck.sdPlugin/manifest.json` → `Software.MinimumVersion`).
+- **Stream Deck** app **6.9** or newer (see `com.mcawful.pbstreamdeck.sdPlugin/manifest.json` → `Software.MinimumVersion`).
 - **Node.js 20** on your PC — Stream Deck runs this plugin with the embedded Node runtime version declared in the manifest (`Nodejs.Version`).
 - **PhantomBot** reachable over HTTP/HTTPS, with a valid panel **webauth** token (often from `botlogin.txt` or your panel setup, depending on how you run PhantomBot).
 
-### Install the plugin
+### Get the plugin (Marketplace)
 
-How you install depends on what you downloaded.
+**Recommended:** install **PhantomBot Control** from the **Elgato Marketplace** (the same catalog the Stream Deck app uses).
 
-**If you have a packaged plugin** (for example a `.streamDeckPlugin` file from [Releases](https://github.com/mcawful/pb-streamdeck-plugin/releases)):
+1. Open the **Stream Deck** app and go to the **Stream Deck Store** (or **Marketplace** / plugin store, depending on your app version).
+2. Search for **PhantomBot Control** and choose **Install**.
 
-1. Close Stream Deck if the installer asks you to.
-2. Open the file; Stream Deck should register the plugin.
-3. Restart Stream Deck if the new plugin does not appear.
+You can also browse plugins on the [Elgato Marketplace](https://marketplace.elgato.com/stream-deck/plugins) in a web browser; after you install from there, Stream Deck picks up the plugin like any other store install.
 
-**If you are using this repository (advanced):** you must build the JavaScript bundle first. See [Build from source](#build-from-source) below, then register the `com.mcawful.pbstreamdeck.sdPlugin` folder with Stream Deck (for example with **`streamdeck link`** from [@elgato/cli](https://www.npmjs.com/package/@elgato/cli), or by copying the folder into Stream Deck's plugins directory for your OS).
+Updates appear through the store like other Marketplace plugins.
 
-After an update, restart Stream Deck or run:
+### Install locally (optional)
+
+Use this path if you prefer a file from GitHub, need a specific build, or are testing a change that is not on the store yet.
+
+**Packaged file** (for example a `.streamDeckPlugin` from [Releases](https://github.com/mcawful/pb-streamdeck-plugin/releases)):
+
+1. Quit Stream Deck if the installer suggests it.
+2. Double-click the `.streamDeckPlugin` file so Stream Deck registers it.
+3. Restart Stream Deck if the plugin does not show up.
+
+**From this repository (advanced):** build the bundle first ([Build from source](#build-from-source)), then register `com.mcawful.pbstreamdeck.sdPlugin` with Stream Deck (for example **`streamdeck link`** from [@elgato/cli](https://www.npmjs.com/package/@elgato/cli), or by copying the folder into Stream Deck's plugins directory for your OS).
+
+After a **local** install or manual upgrade, restart Stream Deck or run:
 
 ```bash
 streamdeck restart com.mcawful.pbstreamdeck
@@ -48,7 +59,7 @@ streamdeck restart com.mcawful.pbstreamdeck
 
 You usually configure the bot **once** for the whole plugin. Change it only if your URL, token, or bot username changes.
 
-1. Add the **Run Command** action from the **PhantomBot** category.
+1. Add the **Run Command** action from the **PhantomBot Control** category.
 2. Select the key and open the **property inspector** (right-hand panel in Stream Deck).
 3. Expand **Bot connection configuration**.
 4. Set:

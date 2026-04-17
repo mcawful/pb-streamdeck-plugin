@@ -1,4 +1,5 @@
 {
+    "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
     "Name": "PhantomBot Control",
     "Version": "1.0.0.0",
     "Author": "McAwful",
@@ -9,7 +10,9 @@
             "Icon": "imgs/actions/command/icon",
             "Tooltip": "Run a PhantomBot chat command.",
             "PropertyInspectorPath": "ui/phantomControl.html",
-            "Controllers": ["Keypad"],
+            "Controllers": [
+                "Keypad"
+            ],
             "States": [
                 {
                     "Image": "imgs/actions/command/key",
@@ -18,16 +21,16 @@
             ]
         }
     ],
-    "Category": "PhantomBot",
+    "Category": "PhantomBot Control",
     "CategoryIcon": "imgs/plugin/category-icon",
     "CodePath": "bin/plugin.js",
     "Description": "Third-party plugin to control PhantomBot from your Stream Deck.",
     "URL": "https://github.com/mcawful/pb-streamdeck-plugin",
     "SupportURL": "https://github.com/mcawful/pb-streamdeck-plugin/issues",
     "Icon": "imgs/plugin/marketplace",
-    "SDKVersion": 2,
+    "SDKVersion": 3,
     "Software": {
-        "MinimumVersion": "6.5"
+        "MinimumVersion": "6.9"
     },
     "OS": [
         {
