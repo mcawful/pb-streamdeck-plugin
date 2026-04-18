@@ -1,6 +1,6 @@
 name: PR to release branch
 
-# Runs Vitest when a pull request targets the release branch(es).
+# Runs Vitest (unit + HTTP integration) when a pull request targets the release branch(es).
 # To block merges until this passes: Settings → Branches → edit the rule for `release`
 # (and/or `release/**`) → Require status checks → enable "PR to release branch / test".
 on:
@@ -35,3 +35,6 @@ jobs:
 
       - name: Run unit tests
         run: npm test
+
+      - name: Run integration tests
+        run: npm run test:integration

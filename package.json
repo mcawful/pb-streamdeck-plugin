@@ -23,6 +23,7 @@
         "format:check": "prettier --check .",
         "typecheck": "tsc --noEmit",
         "test": "vitest run",
+        "test:integration": "vitest run --config vitest.integration.config.ts",
         "test:watch": "vitest",
         "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.mcawful.pbstreamdeck\""
     },
