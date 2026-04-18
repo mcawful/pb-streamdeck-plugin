@@ -1,7 +1,9 @@
 name: Release
 
-# Create a GitHub Release (and git tag) when a release-branch PR is merged into main.
+# Create a GitHub Release (and git tag) when a release-branch PR is merged into main,
+# or when you run this workflow manually (pick the branch/tag to build from).
 on:
+  workflow_dispatch:
   pull_request:
     types: [closed]
     branches:
@@ -13,12 +15,13 @@ permissions:
 jobs:
   release:
     if: >
-      github.event.pull_request.merged == true &&
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
       github.event.pull_request.head.repo.full_name == github.repository &&
-      (github.head_ref == 'release' || startsWith(github.head_ref, 'release/'))
+      (github.head_ref == 'release' || startsWith(github.head_ref, 'release/')))
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout merge commit on main
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js

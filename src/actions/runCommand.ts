@@ -5,6 +5,7 @@
  */
 import streamDeck, { action, KeyDownEvent, SingletonAction } from "@elgato/streamdeck";
 
+import { asPhantomBotCommandMessage } from "../lib/chatCommandMessage";
 import { sendPhantomCommand } from "../lib/phantomBot";
 import { toBool } from "../lib/toBool";
 import type { PluginGlobalSettings, RunCommandActionSettings } from "../settings";
@@ -70,16 +71,4 @@ export class RunCommandAction extends SingletonAction<RunCommandActionSettings> 
 			await ev.action.showAlert();
 		}
 	}
-}
-
-/**
- * Normalizes user input for PhantomBot's `message` header (chat commands must start with `!`).
- *
- * @param raw Command from the property inspector (with or without leading `!`).
- * @returns Trimmed string with a leading `!` when non-empty and not already present.
- */
-function asPhantomBotCommandMessage(raw: string): string {
-	const t = raw.trim();
-	if (!t) return "";
-	return t.startsWith("!") ? t : `!${t}`;
 }
