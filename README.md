@@ -59,7 +59,7 @@ streamdeck restart com.mcawful.pbstreamdeck
 
 You usually configure the bot **once** for the whole plugin. Change it only if your URL, token, or bot username changes.
 
-1. Add the **Run Command** action from the **PhantomBot Control** category.
+1. Add the **Run Command** action from the **PhantomBot** category.
 2. Select the key and open the **property inspector** (right-hand panel in Stream Deck).
 3. Expand **Bot connection configuration**.
 4. Set:
