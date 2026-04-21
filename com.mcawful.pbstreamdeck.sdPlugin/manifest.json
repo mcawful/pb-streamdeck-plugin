@@ -21,7 +21,7 @@
             ]
         }
     ],
-    "Category": "PhantomBot",
+    "Category": "PhantomBot Control",
     "CategoryIcon": "imgs/plugin/category-icon",
     "CodePath": "bin/plugin.js",
     "Description": "Third-party plugin to control PhantomBot from your Stream Deck.",
