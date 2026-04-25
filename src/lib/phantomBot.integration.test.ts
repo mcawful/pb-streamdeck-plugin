@@ -10,22 +10,52 @@ describe("phantomBot (integration, real HTTP)", () => {
 		if (server) await server.close();
 	});
 
-	it("testPhantomBotConnection succeeds against GET /games?search=a with valid webauth", async () => {
+	it("testPhantomBotConnection succeeds against HEAD /dbquery with 405 and valid webauth", async () => {
 		server = await startPhantomBotLikeHttpServer({});
 		const result = await testPhantomBotConnection({
 			baseUrl: server.baseUrl,
 			webauth: server.expectedWebauth,
 		});
-		expect(result).toEqual({ ok: true, status: 200, body: "[]" });
+		expect(result).toEqual({ ok: true, status: 405, body: "" });
 	});
 
 	it("testPhantomBotConnection surfaces HTTP errors from the bot", async () => {
-		server = await startPhantomBotLikeHttpServer({ gamesStatus: 503, gamesBody: "busy" });
+		server = await startPhantomBotLikeHttpServer({ headDbQueryStatus: 503 });
 		const result = await testPhantomBotConnection({
 			baseUrl: server.baseUrl,
 			webauth: server.expectedWebauth,
 		});
-		expect(result).toEqual({ ok: false, status: 503, body: "busy" });
+		expect(result).toEqual({
+			ok: true,
+			status: 200,
+			body: '{"table":{"table_name":"modules","exists":true}}',
+		});
+	});
+
+	it("falls back for older PhantomBot behavior when HEAD does not return 405", async () => {
+		server = await startPhantomBotLikeHttpServer({ headDbQueryStatus: 404 });
+		const result = await testPhantomBotConnection({
+			baseUrl: server.baseUrl,
+			webauth: server.expectedWebauth,
+		});
+		expect(result).toEqual({
+			ok: true,
+			status: 200,
+			body: '{"table":{"table_name":"modules","exists":true}}',
+		});
+	});
+
+	it("fails when both HEAD and legacy fallback fail", async () => {
+		server = await startPhantomBotLikeHttpServer({
+			headDbQueryStatus: 404,
+			legacyDbQueryStatus: 500,
+			legacyDbQueryBody: "legacy probe failed",
+		});
+		const result = await testPhantomBotConnection({
+			baseUrl: server.baseUrl,
+			webauth: server.expectedWebauth,
+		});
+		expect(result).toEqual({ ok: false, status: 500, body: "legacy probe failed" });
 	});
 
 	it("testPhantomBotConnection fails when webauth does not match", async () => {
@@ -95,7 +125,7 @@ describe("phantomBot (integration, HTTPS self-signed + allowInsecureTls)", () =>
 			webauth: server.expectedWebauth,
 			allowInsecureTls: true,
 		});
-		expect(result).toEqual({ ok: true, status: 200, body: "[]" });
+		expect(result).toEqual({ ok: true, status: 405, body: "" });
 	});
 
 	it("sendPhantomCommand succeeds over HTTPS with allowInsecureTls", async () => {
