@@ -67,33 +67,54 @@ export type TestPhantomBotConnectionOptions = {
 };
 
 /**
- * Checks that the bot URL and webauth token work by calling authenticated `GET /games`.
- * Uses a short search query and a client-side timeout suitable for the property inspector.
+ * Checks that the bot URL and webauth token work using a two-step compatibility probe:
+ * 1) `HEAD /dbquery` expecting **405** (PhantomBot 3.7+ behavior),
+ * 2) fallback for older bots: `GET /dbquery?table=modules&tableExists` expecting **200**.
  *
  * @param options Base URL, webauth header, and optional insecure HTTPS mode.
- * @returns HTTP outcome of the probe request (body is response text, often JSON).
+ * @returns `ok` is true when either compatibility probe returns its expected status.
  */
 export async function testPhantomBotConnection(
 	options: TestPhantomBotConnectionOptions,
 ): Promise<{ ok: boolean; status: number; body: string }> {
 	const base = options.baseUrl.replace(/\/$/, "");
-	const url = `${base}/games?search=a`;
+	const headUrl = `${base}/dbquery`;
+	const legacyGetUrl = `${base}/dbquery?table=modules&tableExists`;
 	const headers: Record<string, string> = { webauth: options.webauth };
 
 	const controller = new AbortController();
 	const timeoutMs = 12_000;
 	const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-	const init = withOptionalInsecureTls(options.allowInsecureTls, {
-		method: "GET",
+	const headInit = withOptionalInsecureTls(options.allowInsecureTls, {
+		method: "HEAD",
 		headers,
 		signal: controller.signal,
 	});
 
 	try {
-		const res = await undiciFetch(url, init);
-		const body = await res.text();
-		return { ok: res.ok, status: res.status, body };
+		const headRes = await undiciFetch(headUrl, headInit);
+		const headBody = await headRes.text();
+		if (headRes.status === 405) {
+			return { ok: true, status: headRes.status, body: headBody };
+		}
+		if (headRes.status === 408) {
+			return { ok: false, status: headRes.status, body: headBody };
+		}
+
+		// Auth is known-bad; skip legacy fallback to avoid hiding real auth failures.
+		if (headRes.status === 401 || headRes.status === 403) {
+			return { ok: false, status: headRes.status, body: headBody };
+		}
+
+		const legacyGetInit = withOptionalInsecureTls(options.allowInsecureTls, {
+			method: "GET",
+			headers,
+			signal: controller.signal,
+		});
+		const legacyRes = await undiciFetch(legacyGetUrl, legacyGetInit);
+		const legacyBody = await legacyRes.text();
+		return { ok: legacyRes.status === 200, status: legacyRes.status, body: legacyBody };
 	} finally {
 		clearTimeout(timeoutId);
 	}

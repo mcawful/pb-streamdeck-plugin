@@ -90,7 +90,7 @@ describe("plugin inspector (testConnection)", () => {
 	});
 
 	it("sends success when the probe returns ok", async () => {
-		testPhantomBotConnection.mockResolvedValue({ ok: true, status: 200, body: "[]" });
+		testPhantomBotConnection.mockResolvedValue({ ok: true, status: 405, body: "" });
 		await getInspectorHandler()({
 			payload: {
 				event: "testConnection",
@@ -177,7 +177,7 @@ describe("plugin inspector (testConnection)", () => {
 	});
 
 	it("passes allowInsecureTls from inspector settings", async () => {
-		testPhantomBotConnection.mockResolvedValue({ ok: true, status: 200, body: "" });
+		testPhantomBotConnection.mockResolvedValue({ ok: true, status: 405, body: "" });
 		await getInspectorHandler()({
 			payload: {
 				event: "testConnection",

@@ -97,7 +97,7 @@ src/                                   # TypeScript source (compiled into bin/pl
   plugin.ts                            # Entry: register actions; inspector → plugin (e.g. connection test)
   actions/runCommand.ts                # Run Command action: keyDown → PhantomBot HTTP
   settings.ts                          # Global vs per-action settings types
-  lib/phantomBot.ts                    # Undici: PUT /dbquery, GET /games connection test
+  lib/phantomBot.ts                    # Undici: PUT /dbquery; HEAD /dbquery connection test (405 = OK)
   lib/toBool.ts                        # Boolean coercion for persisted settings
   lib/streamDeckConnection.ts          # sendToPropertyInspector with explicit action context
 ```
@@ -137,7 +137,7 @@ Elgato CLI: [validate](https://docs.elgato.com/streamdeck/cli/commands/validate)
 
 On **key press**, the plugin sends an authenticated **`PUT`** to `{baseUrl}/dbquery` with headers `user`, `message`, and `webauth`. The `message` body is normalized so chat commands start with `!`.
 
-The **connection test** sends an authenticated **`GET`** to `{baseUrl}/games?search=…` (lightweight, auth-gated). Timeouts and errors are surfaced in the property inspector.
+The **connection test** first sends an authenticated **`HEAD`** to `{baseUrl}/dbquery`. PhantomBot 3.7+ responds with **405 Method Not Allowed** when auth succeeds (non-GET methods are rejected after authentication), and the plugin treats that as success. For older PhantomBot versions, the plugin falls back to authenticated **`GET`** `{baseUrl}/dbquery?table=modules&tableExists` and treats **200** as success. Timeouts and errors are surfaced in the property inspector.
 
 HTTP is implemented with [Undici](https://github.com/nodejs/undici). Optional `rejectUnauthorized: false` is applied only when the user enables insecure HTTPS and the URL scheme is `https:`.
 
