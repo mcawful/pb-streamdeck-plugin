@@ -151,18 +151,6 @@ The UI loads [sdpi-components](https://sdpi-components.dev/) from the CDN declar
 
 Released builds use **`Nodejs.Debug`: `disabled`** in `manifest.json` (better for end users). For local debugging you may temporarily set it to **`enabled`** so you can attach a debugger to the plugin process; revert before shipping a release build.
 
-### Packaging a release
-
-From the repository root (after dependencies are installed):
-
-```bash
-npm run pack
-```
-
-That runs a production build, then **`streamdeck pack`** on `com.mcawful.pbstreamdeck.sdPlugin`. The `.streamDeckPlugin` file is written next to that folder (see **`streamdeck pack --help`**). Overview: [Distribution / packaging](https://docs.elgato.com/sdk/plugins/packaging).
-
-When you tag a release, bump **`manifest.json` → `Version`** (four parts, e.g. `1.0.1.0`) and **`package.json` → `version`** (semver, e.g. `1.0.1`) together.
-
 ### Stack
 
 - [Elgato `@elgato/streamdeck`](https://www.npmjs.com/package/@elgato/streamdeck) SDK (TypeScript)
@@ -182,6 +170,7 @@ When you tag a release, bump **`manifest.json` → `Version`** (four parts, e.g.
 ## Links
 
 - **This repo:** [github.com/mcawful/pb-streamdeck-plugin](https://github.com/mcawful/pb-streamdeck-plugin) — [Issues](https://github.com/mcawful/pb-streamdeck-plugin/issues)
+- **Install from Marketplace:** [marketplace.elgato.com/stream-deck/plugins](https://marketplace.elgato.com/stream-deck/plugins) (search for **PhantomBot Control**)
 - **PhantomBot (upstream):** [github.com/PhantomBot/PhantomBot](https://github.com/PhantomBot/PhantomBot)
 
 ---
