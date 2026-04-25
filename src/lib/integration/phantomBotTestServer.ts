@@ -1,5 +1,6 @@
 /**
- * Minimal local HTTP(S) server that mimics PhantomBot panel routes used by {@link ../phantomBot}.
+ * Minimal local HTTP(S) server that mimics PhantomBot panel routes used by {@link ../phantomBot}
+ * (`PUT /dbquery`, `HEAD /dbquery`).
  *
  * @module
  */
@@ -22,8 +23,12 @@ type ServerOptions = {
 	expectedWebauth?: string;
 	dbQueryStatus?: number;
 	dbQueryBody?: string;
-	gamesStatus?: number;
-	gamesBody?: string;
+	/** Response for authenticated `HEAD /dbquery` (PhantomBot returns 405). */
+	headDbQueryStatus?: number;
+	headDbQueryBody?: string;
+	/** Legacy fallback probe: authenticated `GET /dbquery?table=modules&tableExists` (older PhantomBot). */
+	legacyDbQueryStatus?: number;
+	legacyDbQueryBody?: string;
 };
 
 async function drainRequestBody(req: IncomingMessage): Promise<void> {
@@ -42,8 +47,10 @@ function createPhantomBotListener(
 	expectedWebauth: string,
 	dbQueryStatus: number,
 	dbQueryBody: string,
-	gamesStatus: number,
-	gamesBody: string,
+	headDbQueryStatus: number,
+	headDbQueryBody: string,
+	legacyDbQueryStatus: number,
+	legacyDbQueryBody: string,
 	state: { lastDbQueryHeaders?: Record<string, string | undefined> },
 ): (req: IncomingMessage, res: ServerResponse) => void {
 	return (req, res) => {
@@ -67,13 +74,28 @@ function createPhantomBotListener(
 					return;
 				}
 
-				if (req.method === "GET" && req.url?.startsWith("/games?")) {
+				if (req.method === "HEAD" && (req.url === "/dbquery" || req.url?.startsWith("/dbquery?"))) {
+					await drainRequestBody(req);
+					if (!okAuth) {
+						res.writeHead(401, { "Content-Type": "text/plain" }).end("unauthorized");
+						return;
+					}
+					res.writeHead(headDbQueryStatus, { "Content-Type": "text/plain" }).end(headDbQueryBody);
+					return;
+				}
+
+				if (
+					req.method === "GET" &&
+					req.url?.startsWith("/dbquery?") &&
+					req.url.includes("table=modules") &&
+					req.url.includes("tableExists")
+				) {
 					await drainRequestBody(req);
 					if (!okAuth) {
 						res.writeHead(401, { "Content-Type": "application/json" }).end("{}");
 						return;
 					}
-					res.writeHead(gamesStatus, { "Content-Type": "application/json" }).end(gamesBody);
+					res.writeHead(legacyDbQueryStatus, { "Content-Type": "application/json" }).end(legacyDbQueryBody);
 					return;
 				}
 
@@ -98,18 +120,30 @@ function listen(server: http.Server | https.Server): Promise<{ address: AddressI
 }
 
 /**
- * Listens on an ephemeral port on `127.0.0.1` and serves `PUT /dbquery` and `GET /games` over **HTTP**.
+ * Listens on an ephemeral port on `127.0.0.1` and serves `PUT /dbquery`, `HEAD /dbquery`,
+ * and legacy `GET /dbquery?table=modules&tableExists` over **HTTP**.
  */
 export async function startPhantomBotLikeHttpServer(options: ServerOptions): Promise<PhantomBotLikeServer> {
 	const expectedWebauth = options.expectedWebauth ?? "integration-webauth";
 	const dbQueryStatus = options.dbQueryStatus ?? 200;
 	const dbQueryBody = options.dbQueryBody ?? "ok";
-	const gamesStatus = options.gamesStatus ?? 200;
-	const gamesBody = options.gamesBody ?? "[]";
+	const headDbQueryStatus = options.headDbQueryStatus ?? 405;
+	const headDbQueryBody = options.headDbQueryBody ?? "";
+	const legacyDbQueryStatus = options.legacyDbQueryStatus ?? 200;
+	const legacyDbQueryBody = options.legacyDbQueryBody ?? '{"table":{"table_name":"modules","exists":true}}';
 
 	const state: { lastDbQueryHeaders?: Record<string, string | undefined> } = {};
 	const server = http.createServer(
-		createPhantomBotListener(expectedWebauth, dbQueryStatus, dbQueryBody, gamesStatus, gamesBody, state),
+		createPhantomBotListener(
+			expectedWebauth,
+			dbQueryStatus,
+			dbQueryBody,
+			headDbQueryStatus,
+			headDbQueryBody,
+			legacyDbQueryStatus,
+			legacyDbQueryBody,
+			state,
+		),
 	);
 
 	const { address } = await listen(server);
@@ -137,8 +171,10 @@ export async function startPhantomBotLikeHttpsServer(options: ServerOptions): Pr
 	const expectedWebauth = options.expectedWebauth ?? "integration-webauth";
 	const dbQueryStatus = options.dbQueryStatus ?? 200;
 	const dbQueryBody = options.dbQueryBody ?? "ok";
-	const gamesStatus = options.gamesStatus ?? 200;
-	const gamesBody = options.gamesBody ?? "[]";
+	const headDbQueryStatus = options.headDbQueryStatus ?? 405;
+	const headDbQueryBody = options.headDbQueryBody ?? "";
+	const legacyDbQueryStatus = options.legacyDbQueryStatus ?? 200;
+	const legacyDbQueryBody = options.legacyDbQueryBody ?? '{"table":{"table_name":"modules","exists":true}}';
 
 	const state: { lastDbQueryHeaders?: Record<string, string | undefined> } = {};
 	const server = https.createServer(
@@ -146,7 +182,16 @@ export async function startPhantomBotLikeHttpsServer(options: ServerOptions): Pr
 			key: fs.readFileSync(path.join(fixtureDir, "test-key.pem")),
 			cert: fs.readFileSync(path.join(fixtureDir, "test-cert.pem")),
 		},
-		createPhantomBotListener(expectedWebauth, dbQueryStatus, dbQueryBody, gamesStatus, gamesBody, state),
+		createPhantomBotListener(
+			expectedWebauth,
+			dbQueryStatus,
+			dbQueryBody,
+			headDbQueryStatus,
+			headDbQueryBody,
+			legacyDbQueryStatus,
+			legacyDbQueryBody,
+			state,
+		),
 	);
 
 	const { address } = await listen(server);

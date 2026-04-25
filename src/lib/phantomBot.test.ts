@@ -92,23 +92,52 @@ describe("sendPhantomCommand", () => {
 describe("testPhantomBotConnection", () => {
 	beforeEach(() => {
 		mockFetch.mockReset();
-		mockFetch.mockImplementation(() => Promise.resolve(new Response("[]", { status: 200 })));
+		mockFetch.mockImplementation(() => Promise.resolve(new Response("", { status: 405 })));
 	});
 
-	it("GETs /games?search=a with webauth header", async () => {
-		await testPhantomBotConnection({
+	it("HEADs /dbquery with webauth header and treats 405 as success", async () => {
+		const result = await testPhantomBotConnection({
 			baseUrl: "https://host/",
 			webauth: "abc",
 		});
 
+		expect(result).toEqual({ ok: true, status: 405, body: "" });
 		expect(mockFetch).toHaveBeenCalledTimes(1);
 		const [url, init] = mockFetch.mock.calls[0]!;
-		expect(String(url)).toBe("https://host/games?search=a");
+		expect(String(url)).toBe("https://host/dbquery");
 		expect(init).toMatchObject({
-			method: "GET",
+			method: "HEAD",
 			headers: { webauth: "abc" },
 		});
 		expect((init as RequestInit).signal).toBeInstanceOf(AbortSignal);
+	});
+
+	it("falls back to legacy GET /dbquery?table=modules&tableExists for older bots", async () => {
+		mockFetch
+			.mockResolvedValueOnce(new Response("", { status: 404 }))
+			.mockResolvedValueOnce(new Response('{"table":{"exists":true}}', { status: 200 }));
+
+		const result = await testPhantomBotConnection({
+			baseUrl: "https://host/",
+			webauth: "abc",
+		});
+
+		expect(mockFetch).toHaveBeenCalledTimes(2);
+		expect(String(mockFetch.mock.calls[1]![0])).toBe("https://host/dbquery?table=modules&tableExists");
+		expect((mockFetch.mock.calls[1]![1] as RequestInit).method).toBe("GET");
+		expect(result).toEqual({ ok: true, status: 200, body: '{"table":{"exists":true}}' });
+	});
+
+	it("does not fallback when HEAD fails auth", async () => {
+		mockFetch.mockResolvedValueOnce(new Response("unauthorized", { status: 401 }));
+
+		const result = await testPhantomBotConnection({
+			baseUrl: "https://host/",
+			webauth: "bad",
+		});
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		expect(result).toEqual({ ok: false, status: 401, body: "unauthorized" });
 	});
 
 	it("fires client abort after 12s so the GET can be torn down", async () => {
@@ -127,7 +156,9 @@ describe("testPhantomBotConnection", () => {
 			const result = await p;
 			const init = mockFetch.mock.calls[0]![1] as RequestInit;
 			expect(init.signal?.aborted).toBe(true);
-			expect(result).toEqual({ ok: false, status: 408, body: "timed out" });
+			expect(result.ok).toBe(false);
+			expect(result.status).toBe(408);
+			expect(result.body).toBe("timed out");
 			await vi.runOnlyPendingTimersAsync();
 		} finally {
 			vi.useRealTimers();
@@ -138,7 +169,7 @@ describe("testPhantomBotConnection", () => {
 		vi.useFakeTimers();
 		try {
 			const clearSpy = vi.spyOn(globalThis, "clearTimeout");
-			mockFetch.mockImplementation(() => Promise.resolve(new Response("ok", { status: 200 })));
+			mockFetch.mockImplementation(() => Promise.resolve(new Response("", { status: 405 })));
 
 			await testPhantomBotConnection({ baseUrl: "http://x", webauth: "y" });
 
